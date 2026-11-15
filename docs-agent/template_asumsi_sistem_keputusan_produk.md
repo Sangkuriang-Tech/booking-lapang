@@ -1,0 +1,65 @@
+# Catatan Asumsi Sistem & Keputusan Produk (`ASSUMPTIONS.md`)
+
+Dokumen ini mencatat seluruh keputusan bisnis, asumsi teknis, dan perilaku *edge case* yang disepakati selama pengembangan. **AI Coding Agent wajib memperbarui dokumen ini di setiap akhir fase (F0–F6)** jika terdapat asumsi baru yang diambil.
+
+---
+
+## 1. Ketetapan Awal (Baseline dari Spesifikasi & Threat Model)
+
+### A. Paket Berlangganan & Kuota SaaS
+- **Kepemilikan Langganan:** Langganan (`subscriptions`) terikat pada akun Pemilik (`owner_id`), bukan per `venue_id`, sehingga satu pemilik paket *Pro* atau *Enterprise* dapat mengelola beberapa cabang venue dalam satu langganan.
+- **Rincian Kuota 3 Paket Utama:**
+  - **Starter:** Maksimal 1 venue, 4 lapangan per venue, 3 karyawan gabungan, 1 rekening/QRIS per venue, retensi bukti 30 hari, tanpa ekspor laporan CSV/Excel.
+  - **Pro:** Maksimal 2 venue, 12 lapangan per venue, 10 karyawan gabungan, 3 rekening/QRIS per venue, retensi bukti 90 hari, termasuk ekspor laporan CSV/Excel.
+  - **Enterprise:** Venue tidak terbatas, lapangan per venue tidak terbatas, 25 karyawan gabungan, rekening/QRIS tidak terbatas, retensi bukti 180 hari, termasuk ekspor laporan CSV/Excel.
+- **Snapshot Kuota:** Saat langganan dibuat/diperbarui, nilai kuota disalin (*snapshot*) ke tabel `subscriptions` agar perubahan master `subscription_plans` di masa depan tidak mengganggu hak pelanggan yang sedang berjalan.
+- **Perilaku Downgrade:** Jika pemilik turun ke paket dengan kuota lebih kecil dari jumlah aset yang sudah dimiliki, data eksisting tetap dipertahankan, namun pembuatan aset baru (venue/lapangan/karyawan/rekening) diblokir sampai jumlah aktif disesuaikan.
+- **Masa Tenggang (*Grace Period*) H+7:** Saat `ends_on` terlewati, selama `H+1` s/d `H+7` venue disembunyikan dari pencarian publik dan menolak booking online baru, tetapi pemilik/staf tetap dapat memvalidasi pembayaran yang sudah masuk, melakukan scan QR check-in, dan melihat laporan. Setelah `H+7`, pembuatan booking OTS dikunci hingga langganan diperpanjang.
+
+### B. Aturan Bisnis & Operasional
+- **Durasi & Granularitas Slot:** Booking dibatasi kelipatan 1 jam penuh (`60 menit`). Pembooking dapat memilih satu atau beberapa slot jam berurutan dalam satu transaksi (satu kode booking dan satu QR code).
+- **Hari Kerja vs Akhir Pekan:** Akhir pekan (*weekend*) didefinisikan sebagai hari Sabtu dan Minggu. Hari libur nasional belum dimodelkan di Fase 1.
+- **Jam Operasional Lewat Tengah Malam:** Disimpan sebagai menit sejak `00:00` (`closes_min` maksimal `2880`), sehingga jadwal buka Sabtu 07.00 hingga Minggu 01.00 dini hari tercatat pada `weekday` hari Sabtu (`420` s/d `1500`).
+- **Pembagian Area Lapangan:** Setiap lapangan (`courts`) memiliki jadwal dan harga independen serta tidak saling berbagi area fisik dengan lapangan lain di Fase 1.
+- **Laporan Keuangan Lintas Bulan:** Pendapatan harian dan bulanan dihitung berdasarkan tanggal main (`play_date` dalam zona waktu venue), bukan tanggal transfer masuk. Jika pembooking membayar DP pada 28 November untuk bermain pada 2 Desember, nominal tersebut masuk ke laporan bulan Desember.
+- **Pembatalan & Pengembalian Dana:** Sistem hanya mencatat status `cancelled` dan melepas slot jika memenuhi batas `cancel_min_hours`. Pengembalian dana (refund) maupun kebijakan DP hangus diselesaikan secara manual di luar sistem antara venue dan pembooking.
+- **Otomatisasi Status Pasca-Main:** Scheduler per menit otomatis mengubah status `checked_in` yang melewati `ends_at` menjadi `completed`, dan mengubah status `confirmed` yang melewati `ends_at` tanpa scan QR menjadi `no_show`.
+
+### C. Keamanan, Enkripsi & Retensi Data
+- **Kolom Terenkripsi (`encrypted` cast / enkripsi file):**
+  - `users.phone`
+  - `bookings.customer_phone`
+  - `venue_payment_accounts.account_number`
+  - `bookings.qr_token_enc`
+  - File bukti transfer pada disk privat (`payments.proof_path`)
+- **Kolom Sengaja Tidak Dienkripsi (Keputusan Produk):**
+  - `users.name`, `users.email`, `bookings.customer_name`, `bookings.customer_email` (diperlukan untuk proses autentikasi Google Sign-In, keunikan akun, pencarian staf di meja resepsionis, dan verifikasi manual saat scan QR).
+- **Jeda Perubahan Rekening Tujuan:** Rekening bank atau QRIS baru yang ditambahkan/diubah oleh Pemilik baru tampil ke pembooking setelah jeda 24 jam (`visible_from`), **kecuali** rekening aktif pertama saat venue baru pertama kali diatur (`visible_from = now()`).
+- **Retensi Bukti Pembayaran:** File bukti pembayaran dihapus otomatis oleh job harian sesuai `subscriptions.proof_retention_days` (30/90/180 hari) terhitung sejak tanggal main (`play_date`), dengan metadata log tetap dipertahankan.
+- **Format Bukti Pembayaran:** Fase 1 hanya menerima gambar JPG dan PNG (maksimal 2 MB). Format PDF belum didukung.
+- **Kesiapan Kanal WhatsApp (Fase 2):** Pengiriman notifikasi di Fase 1 wajib memakai kelas `Notification` bawaan Laravel agar penambahan kanal WhatsApp Business API di fase berikutnya dapat dilakukan tanpa mengubah logika bisnis.
+
+---
+
+## 2. Log Asumsi Tambahan Per Fase (Diisi oleh Agent)
+
+### Fase F0 — Fondasi
+- *(Agent: catat konfigurasi environment, font yang dipilih, atau asumsi setup di sini)*
+
+### Fase F1 — Data dan Akses
+- *(Agent: catat asumsi terkait migrasi, seeder, kuota paket, atau aturan keanggotaan multi-venue di sini)*
+
+### Fase F2 — Landing Page
+- *(Agent: catat asumsi terkait konten statis, FAQ, atau metadata SEO di sini)*
+
+### Fase F3 — Pencarian dan Booking
+- *(Agent: catat asumsi terkait batas maksimal hold per IP/subnet, kalkulasi multi-jam, atau UX upload di sini)*
+
+### Fase F4 — Validasi dan Check-in
+- *(Agent: catat asumsi terkait toleransi waktu scan QR atau alur pelunasan di tempat di sini)*
+
+### Fase F5 — Dashboard Pemilik dan Superadmin
+- *(Agent: catat asumsi terkait perhitungan laporan, ekspor CSV/Excel, atau manajemen langganan di sini)*
+
+### Fase F6 — Notifikasi dan Poles
+- *(Agent: catat asumsi terkait jadwal queue atau channel notifikasi di sini)*

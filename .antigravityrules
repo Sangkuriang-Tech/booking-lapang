@@ -1,0 +1,20 @@
+# WORKSPACE RULES — BOOKING LAPANGAN SAAS
+
+1. **Single Source of Truth**: Selalu jadikan file-file di folder `docs-agent/` sebagai acuan mutlak:
+   - Spesifikasi Utama: `docs-agent/prompt_pembuatan_aplikasi_booking_lapangan_olahraga.md`
+   - Skema Database: `docs-agent/skema_database_f1_aplikasi_booking_lapangan_postgresql.md`
+   - Threat Model: `docs-agent/threat_model_alur_booking_pembayaran_manual_dan_qr_check_in.md`
+   - Diagram Alur: `docs-agent/diagram_alur_sistem_booking_lapangan.md`
+   - Catatan Asumsi: `docs-agent/template_asumsi_sistem_keputusan_produk.md`
+   - Checklist Keamanan: `docs-agent/checklist_keamanan_owasp_top_10_2025_upload_file.md`
+2. **Strict Scope (Anti-Bloat)**: DILARANG menambah fitur, library, package Composer/NPM, atau tabel database di luar dokumen spesifikasi tanpa persetujuan eksplisit.
+3. **Arsitektur & Desain Wajib**:
+   - Laravel terbaru + PostgreSQL + Inertia.js v2 + Vue 3 (`<script setup>`) + Tailwind CSS (`@theme` tokens).
+   - Semua logika bisnis wajib di `app/Actions` (satu class per use case). Controller tipis.
+   - Kode, tabel, dan komentar dalam Bahasa Inggris; teks UI & validasi dalam Bahasa Indonesia (`lang="id"`).
+   - Desain visual: DILARANG menggunakan gradient di mana pun (termasuk skeleton shimmer, tombol, dan overlay).
+4. **Alur Kerja Bertahap**: Kerjakan HANYA satu fase per sesi. Jangan melompat ke fase berikutnya sebelum direview dan diperintahkan lanjut.
+5. **Definition of Done (Setiap Fase)**:
+   - Semua tes Pest lulus (`php artisan test`).
+   - Formatting bersih (`./vendor/bin/pint --test`).
+   - Update `docs-agent/template_asumsi_sistem_keputusan_produk.md` dan `docs-agent/checklist_keamanan_owasp_top_10_2025_upload_file.md`.
