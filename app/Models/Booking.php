@@ -99,6 +99,7 @@ class Booking extends Model
      * @var list<string>
      */
     protected $hidden = [
+        'customer_phone',
         'qr_token_hash',
         'qr_token_enc',
     ];

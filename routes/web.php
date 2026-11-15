@@ -36,11 +36,17 @@ Route::get('/robots.txt', [SeoController::class, 'robots'])->name('seo.robots');
 Route::get('/llms.txt', [SeoController::class, 'llms'])->name('seo.llms');
 
 Route::middleware('guest')->group(function (): void {
-    Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])->name('auth.google.redirect');
-    Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->name('auth.google.callback');
+    Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])
+        ->middleware('throttle:google-auth')
+        ->name('auth.google.redirect');
+    Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])
+        ->middleware('throttle:google-auth')
+        ->name('auth.google.callback');
 
     Route::get('/staff/login', [StaffAuthController::class, 'show'])->name('staff.login');
-    Route::post('/staff/login', [StaffAuthController::class, 'store'])->name('staff.login.store');
+    Route::post('/staff/login', [StaffAuthController::class, 'store'])
+        ->middleware('throttle:staff-login')
+        ->name('staff.login.store');
 });
 
 Route::post('/logout', [StaffAuthController::class, 'destroy'])
@@ -84,8 +90,12 @@ Route::middleware(['auth', 'role:staff,superadmin'])
             Route::post('/validations/{ulid}', [PaymentValidationController::class, 'update'])->name('validations.update');
 
             Route::get('/check-in', [CheckInController::class, 'index'])->name('check-in.index');
-            Route::post('/check-in/lookup', [CheckInController::class, 'lookup'])->name('check-in.lookup');
-            Route::post('/check-in', [CheckInController::class, 'store'])->name('check-in.store');
+            Route::post('/check-in/lookup', [CheckInController::class, 'lookup'])
+                ->middleware('throttle:check-in-scan')
+                ->name('check-in.lookup');
+            Route::post('/check-in', [CheckInController::class, 'store'])
+                ->middleware('throttle:check-in-scan')
+                ->name('check-in.store');
             Route::post('/check-in/{ulid}/complete', [CheckInController::class, 'complete'])->name('check-in.complete');
 
             Route::get('/ots', [OtsBookingController::class, 'create'])->name('ots.create');
@@ -119,9 +129,17 @@ Route::middleware(['auth', 'role:staff,superadmin'])
             Route::delete('/price-rules/{ruleId}', [CourtManagementController::class, 'destroyPriceRule'])->whereNumber('ruleId')->name('price-rules.destroy');
 
             Route::get('/payment-accounts', [PaymentAccountController::class, 'index'])->name('payment-accounts.index');
-            Route::post('/payment-accounts', [PaymentAccountController::class, 'store'])->name('payment-accounts.store');
-            Route::put('/payment-accounts/{id}', [PaymentAccountController::class, 'update'])->whereNumber('id')->name('payment-accounts.update');
-            Route::post('/payment-accounts/{id}/toggle', [PaymentAccountController::class, 'toggle'])->whereNumber('id')->name('payment-accounts.toggle');
+            Route::post('/payment-accounts', [PaymentAccountController::class, 'store'])
+                ->middleware('throttle:reauth-payment-account')
+                ->name('payment-accounts.store');
+            Route::put('/payment-accounts/{id}', [PaymentAccountController::class, 'update'])
+                ->whereNumber('id')
+                ->middleware('throttle:reauth-payment-account')
+                ->name('payment-accounts.update');
+            Route::post('/payment-accounts/{id}/toggle', [PaymentAccountController::class, 'toggle'])
+                ->whereNumber('id')
+                ->middleware('throttle:reauth-payment-account')
+                ->name('payment-accounts.toggle');
 
             Route::get('/staff', [StaffManagementController::class, 'index'])->name('staff.index');
             Route::post('/staff', [StaffManagementController::class, 'store'])->name('staff.store');

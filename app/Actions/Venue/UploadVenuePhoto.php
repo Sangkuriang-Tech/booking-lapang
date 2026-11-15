@@ -267,9 +267,14 @@ class UploadVenuePhoto
             '<IfModule mod_php.c>',
             '    php_flag engine off',
             '</IfModule>',
-            '<FilesMatch "\.(php|phtml|php[3-8]|phar|cgi|pl|py|sh)$">',
+            'RemoveHandler .php .phtml .php3 .php4 .php5 .php7 .php8 .phar .cgi .pl .py .sh',
+            '<FilesMatch "\.(php|phtml|php[3-8]|phar|cgi|pl|py|sh|html?|xhtml|svg)$">',
+            '    SetHandler None',
             '    Require all denied',
             '</FilesMatch>',
+            '<IfModule mod_headers.c>',
+            '    Header set X-Content-Type-Options "nosniff"',
+            '</IfModule>',
             '',
         ]);
 
