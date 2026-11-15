@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\EnsureActiveVenueSelected;
+use App\Http\Middleware\EnsureRole;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
@@ -17,6 +19,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             HandleInertiaRequests::class,
             SecurityHeaders::class,
+        ]);
+
+        $middleware->alias([
+            'role' => EnsureRole::class,
+            'venue.selected' => EnsureActiveVenueSelected::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

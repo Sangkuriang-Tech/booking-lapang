@@ -51,7 +51,11 @@ Dokumen ini mencatat seluruh keputusan bisnis, asumsi teknis, dan perilaku *edge
 - **Security Headers A02:** Middleware `App\Http\Middleware\SecurityHeaders` menambahkan `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy`, `Strict-Transport-Security` (saat HTTPS/produksi), dan `Content-Security-Policy` (ketika bukan Vite HMR dev server).
 
 ### Fase F1 — Data dan Akses
-- *(Agent: catat asumsi terkait migrasi, seeder, kuota paket, atau aturan keanggotaan multi-venue di sini)*
+- **Migrasi PostgreSQL:** Seluruh 18 tabel aplikasi + tabel `notifications` dimigrasikan ke PostgreSQL 14.5 (`booking_lapang` & `booking_lapang_test` di `phpunit.xml` karena fitur `btree_gist`, `EXCLUDE USING gist`, `tstzrange`/`int4range`, dan trigger PL/pgSQL tidak tersedia di SQLite).
+- **Ekstensi & Trigger:** Ekstensi `btree_gist`, exclusion constraint `bookings_no_overlap` (status terkunci), exclusion constraint `price_rules` & `schedule_blocks`, trigger `prevent_booking_block_overlap()` (`23P01`), dan trigger `forbid_update_delete()` pada `booking_status_logs` & `audit_logs` terpasang di level database.
+- **Paket Langganan & Snapshot:** Master paket (`Starter`, `Pro`, `Enterprise`) disalin (*snapshot*) ke tabel `subscriptions` per `owner_id`. Masa tenggang `H+1..H+7` menyembunyikan venue dari publik & menolak booking online baru namun tetap mengizinkan OTS/validasi/check-in, sedangkan `>H+7` mengunci booking OTS juga.
+- **Isolasi Multi-Venue & Auth:** `App\Support\VenueContext` (scoped per request) memvalidasi `active_venue_id` di sesi terhadap `venue_users` pada setiap request; `VenueScope` menerapkan fail-closed (0 baris) untuk staf yang belum memilih venue. Staf/pemilik dengan 1 venue melewati modal pilih venue otomatis, sedangkan >1 venue diarahkan ke `/dashboard/venues/select`. Google Sign-In (`laravel/socialite` `v5.32.0`) dikhususkan untuk `customer`.
+- **Seeder Lokal/Staging:** `LocalDevelopmentSeeder` hanya berjalan di lingkungan `local`, `staging`, dan `testing` (ketika dipanggil eksplisit oleh tes), mencakup `owner_grace@example.test` (H+3) dan `owner_expired@example.test` (>H+7) selain akun contoh utama.
 
 ### Fase F2 — Landing Page
 - *(Agent: catat asumsi terkait konten statis, FAQ, atau metadata SEO di sini)*
