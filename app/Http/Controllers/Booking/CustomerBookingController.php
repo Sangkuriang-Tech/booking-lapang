@@ -14,6 +14,7 @@ use App\Models\Court;
 use App\Models\Payment;
 use App\Models\Scopes\VenueScope;
 use App\Models\VenuePaymentAccount;
+use App\Support\QrCodeSvg;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -48,6 +49,13 @@ class CustomerBookingController extends Controller
                 'dp_required' => $booking->dp_required,
                 'paid_total' => $booking->paid_total,
                 'hold_expires_at' => $booking->hold_expires_at?->toIso8601String(),
+                'qr_svg_data_uri' => $booking->status === Booking::STATUS_CONFIRMED
+                    && $booking->qr_revoked_at === null
+                    && $booking->qr_token_enc !== null
+                    ? QrCodeSvg::toDataUri($booking->qr_token_enc)
+                    : null,
+                'qr_valid_from' => $booking->qr_valid_from?->toIso8601String(),
+                'qr_valid_until' => $booking->qr_valid_until?->toIso8601String(),
                 'venue' => [
                     'ulid' => $booking->venue->ulid,
                     'slug' => $booking->venue->slug,
@@ -116,6 +124,13 @@ class CustomerBookingController extends Controller
                 'dp_required' => $booking->dp_required,
                 'paid_total' => $booking->paid_total,
                 'hold_expires_at' => $booking->hold_expires_at?->toIso8601String(),
+                'qr_svg_data_uri' => $booking->status === Booking::STATUS_CONFIRMED
+                    && $booking->qr_revoked_at === null
+                    && $booking->qr_token_enc !== null
+                    ? QrCodeSvg::toDataUri($booking->qr_token_enc)
+                    : null,
+                'qr_valid_from' => $booking->qr_valid_from?->toIso8601String(),
+                'qr_valid_until' => $booking->qr_valid_until?->toIso8601String(),
                 'venue' => [
                     'ulid' => $booking->venue->ulid,
                     'slug' => $booking->venue->slug,

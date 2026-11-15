@@ -1,21 +1,71 @@
 <script setup>
-import { ref } from 'vue';
-import { Link } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
+import { Link, useForm, usePage } from '@inertiajs/vue3';
 import Toast from '@/Components/UI/Toast.vue';
 
 const props = defineProps({
     activeVenueName: {
         type: String,
-        default: 'Venue Belum Dipilih',
+        default: '',
     },
     toast: {
         type: Object,
-        default: () => ({ show: false, type: 'info', message: '' }),
+        default: null,
     },
 });
 
 const emit = defineEmits(['closeToast', 'switchVenue']);
 const sidebarOpen = ref(false);
+const page = usePage();
+
+const resolvedVenueName = computed(() => {
+    if (props.activeVenueName) {
+        return props.activeVenueName;
+    }
+
+    return page.props.activeVenue?.name || 'Mode Superadmin';
+});
+
+const canSwitchVenue = computed(() => (page.props.availableVenues?.length || 0) > 1);
+
+const resolvedToast = computed(() => {
+    if (props.toast) {
+        return props.toast;
+    }
+
+    if (page.props.flash?.error) {
+        return { show: true, type: 'error', message: page.props.flash.error };
+    }
+
+    if (page.props.flash?.success) {
+        return { show: true, type: 'success', message: page.props.flash.success };
+    }
+
+    return { show: false, type: 'info', message: '' };
+});
+
+const currentUrl = computed(() => page.url || '');
+
+const navItems = [
+    { href: '/dashboard', label: 'Ringkasan', exact: true },
+    { href: '/dashboard/validations', label: 'Validasi Pembayaran', exact: false },
+    { href: '/dashboard/check-in', label: 'Scan QR & Check-in', exact: false },
+    { href: '/dashboard/ots', label: 'Booking OTS', exact: false },
+    { href: '/dashboard/schedule', label: 'Jadwal & Blokir Slot', exact: false },
+];
+
+function isActive(item) {
+    if (item.exact) {
+        return currentUrl.value === item.href;
+    }
+
+    return currentUrl.value.startsWith(item.href);
+}
+
+const logoutForm = useForm({});
+function logout() {
+    logoutForm.post('/logout');
+}
 </script>
 
 <template>
@@ -34,7 +84,7 @@ const sidebarOpen = ref(false);
         >
             <div class="flex items-center justify-between border-b border-border px-4 py-3.5">
                 <Link
-                    href="/"
+                    href="/dashboard"
                     class="inline-flex min-h-[44px] items-center gap-2 font-display text-xl font-bold text-primary"
                 >
                     <span
@@ -60,9 +110,17 @@ const sidebarOpen = ref(false);
 
             <nav aria-label="Navigasi dashboard" class="flex-1 space-y-1 p-3">
                 <slot name="sidebar">
-                    <div class="rounded-[var(--radius-control)] bg-canvas px-3 py-2.5 text-xs font-semibold uppercase tracking-wide text-ink-muted">
-                        Menu Dashboard (F4–F5)
-                    </div>
+                    <Link
+                        v-for="item in navItems"
+                        :key="item.href"
+                        :href="item.href"
+                        :class="isActive(item)
+                            ? 'bg-primary text-white'
+                            : 'text-ink hover:bg-canvas'"
+                        class="flex min-h-[44px] items-center rounded-[var(--radius-control)] px-3 py-2 text-sm font-semibold transition-colors"
+                    >
+                        {{ item.label }}
+                    </Link>
                 </slot>
             </nav>
         </aside>
@@ -83,17 +141,27 @@ const sidebarOpen = ref(false);
 
                     <div>
                         <p class="text-xs font-medium text-ink-muted">Venue Aktif</p>
-                        <p class="text-sm font-bold text-ink">{{ activeVenueName }}</p>
+                        <p class="text-sm font-bold text-ink">{{ resolvedVenueName }}</p>
                     </div>
                 </div>
 
-                <button
-                    type="button"
-                    class="inline-flex min-h-[44px] items-center rounded-[var(--radius-control)] border border-border bg-surface px-3.5 py-2 text-sm font-semibold text-primary hover:bg-canvas"
-                    @click="emit('switchVenue')"
-                >
-                    Ganti Venue
-                </button>
+                <div class="flex items-center gap-2">
+                    <Link
+                        v-if="canSwitchVenue"
+                        href="/dashboard/venues/select"
+                        class="inline-flex min-h-[44px] items-center rounded-[var(--radius-control)] border border-border bg-surface px-3.5 py-2 text-sm font-semibold text-primary hover:bg-canvas"
+                    >
+                        Ganti Venue
+                    </Link>
+
+                    <button
+                        type="button"
+                        class="inline-flex min-h-[44px] items-center rounded-[var(--radius-control)] bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-hover"
+                        @click="logout"
+                    >
+                        Keluar
+                    </button>
+                </div>
             </header>
 
             <main id="dashboard-content" class="flex-1 p-4 sm:p-6">
@@ -102,9 +170,9 @@ const sidebarOpen = ref(false);
         </div>
 
         <Toast
-            :show="props.toast.show"
-            :type="props.toast.type"
-            :message="props.toast.message"
+            :show="resolvedToast.show"
+            :type="resolvedToast.type"
+            :message="resolvedToast.message"
             @close="emit('closeToast')"
         />
     </div>

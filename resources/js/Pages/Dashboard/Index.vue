@@ -1,5 +1,6 @@
 <script setup>
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
+import DashboardLayout from '@/Layouts/DashboardLayout.vue';
 
 defineProps({
     courtsCount: {
@@ -15,12 +16,6 @@ defineProps({
         default: () => [],
     },
 });
-
-const logoutForm = useForm({});
-
-function logout() {
-    logoutForm.post('/logout');
-}
 </script>
 
 <template>
@@ -28,54 +23,65 @@ function logout() {
         <meta name="robots" content="noindex" />
     </Head>
 
-    <div class="min-h-screen bg-[#F5F4EF] text-[#0E1B16]">
-        <header class="border-b border-[#DAD8CE] bg-white px-6 py-4">
-            <div class="mx-auto flex max-w-5xl items-center justify-between gap-4">
-                <div>
-                    <p class="text-xs font-medium uppercase tracking-wider text-[#53625B]">Venue Aktif</p>
-                    <h1 class="text-xl font-bold">
-                        {{ activeVenue ? activeVenue.name : 'Mode Superadmin' }}
-                    </h1>
-                </div>
+    <DashboardLayout>
+        <div class="mx-auto max-w-5xl space-y-6">
+            <h1 class="font-display text-3xl font-bold text-ink">
+                Ringkasan Operasional
+            </h1>
 
-                <div class="flex items-center gap-3">
-                    <Link
-                        v-if="availableVenues.length > 1"
-                        href="/dashboard/venues/select"
-                        class="min-h-[44px] inline-flex items-center rounded-[10px] border border-[#DAD8CE] px-4 py-2 text-sm font-medium hover:border-[#0F3B2E]"
-                    >
-                        Ganti Venue
-                    </Link>
-
-                    <button
-                        type="button"
-                        class="min-h-[44px] rounded-[10px] bg-[#0F3B2E] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0B2D23]"
-                        @click="logout"
-                    >
-                        Keluar
-                    </button>
-                </div>
-            </div>
-        </header>
-
-        <main class="mx-auto max-w-5xl px-6 py-8">
             <div
                 v-if="activeVenue && activeVenue.subscription_status === 'grace_period'"
-                class="mb-6 rounded-[10px] border border-[#8A5A0B] bg-white p-4 text-sm text-[#8A5A0B]"
+                role="status"
+                class="rounded-[var(--radius-control)] border border-warning bg-surface p-4 text-sm text-warning"
             >
                 Langganan venue sedang dalam masa tenggang (H+7). Booking online baru dinonaktifkan; validasi pembayaran, check-in QR, dan laporan tetap dapat digunakan.
             </div>
             <div
                 v-else-if="activeVenue && activeVenue.subscription_status === 'inactive'"
-                class="mb-6 rounded-[10px] border border-[#B3261E] bg-white p-4 text-sm text-[#B3261E]"
+                role="alert"
+                class="rounded-[var(--radius-control)] border border-danger bg-surface p-4 text-sm text-danger"
             >
                 Langganan venue tidak aktif. Pembuatan booking baru dikunci sampai paket diperpanjang.
             </div>
 
-            <div class="rounded-xl border border-[#DAD8CE] bg-white p-6">
-                <p class="text-sm text-[#53625B]">Jumlah Lapangan di Venue Aktif</p>
-                <p class="mt-2 text-3xl font-bold">{{ courtsCount }}</p>
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div class="rounded-[var(--radius-card)] border border-border bg-surface p-6">
+                    <p class="text-sm text-ink-muted">Jumlah Lapangan Aktif</p>
+                    <p class="mt-2 font-display text-3xl font-bold text-ink">{{ courtsCount }}</p>
+                </div>
+
+                <Link
+                    href="/dashboard/validations"
+                    class="rounded-[var(--radius-card)] border border-border bg-surface p-6 transition-colors hover:border-primary"
+                >
+                    <p class="text-sm font-semibold text-primary">Validasi Pembayaran</p>
+                    <p class="mt-1 text-xs text-ink-muted">Periksa bukti transfer &amp; konfirmasi booking online.</p>
+                </Link>
+
+                <Link
+                    href="/dashboard/check-in"
+                    class="rounded-[var(--radius-card)] border border-border bg-surface p-6 transition-colors hover:border-primary"
+                >
+                    <p class="text-sm font-semibold text-primary">Scan QR &amp; Check-in</p>
+                    <p class="mt-1 text-xs text-ink-muted">Verifikasi tiket QR, catat pelunasan DP, dan tandai selesai.</p>
+                </Link>
+
+                <Link
+                    href="/dashboard/ots"
+                    class="rounded-[var(--radius-card)] border border-border bg-surface p-6 transition-colors hover:border-primary"
+                >
+                    <p class="text-sm font-semibold text-primary">Booking OTS</p>
+                    <p class="mt-1 text-xs text-ink-muted">Buat booking langsung untuk pelanggan yang datang ke venue.</p>
+                </Link>
+
+                <Link
+                    href="/dashboard/schedule"
+                    class="rounded-[var(--radius-card)] border border-border bg-surface p-6 transition-colors hover:border-primary"
+                >
+                    <p class="text-sm font-semibold text-primary">Jadwal &amp; Blokir Slot</p>
+                    <p class="mt-1 text-xs text-ink-muted">Pantau jadwal harian dan blokir slot untuk perawatan.</p>
+                </Link>
             </div>
-        </main>
-    </div>
+        </div>
+    </DashboardLayout>
 </template>

@@ -11,3 +11,7 @@ Artisan::command('inspire', function () {
 Schedule::command('bookings:expire')
     ->everyMinute()
     ->withoutOverlapping();
+
+Schedule::command('bookings:transition-ended')
+    ->everyMinute()
+    ->withoutOverlapping();

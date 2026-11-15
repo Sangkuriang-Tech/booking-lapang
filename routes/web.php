@@ -5,7 +5,11 @@ use App\Http\Controllers\Auth\StaffAuthController;
 use App\Http\Controllers\Booking\CustomerBookingController;
 use App\Http\Controllers\Booking\PaymentProofController;
 use App\Http\Controllers\Booking\VenueQrisController;
+use App\Http\Controllers\Dashboard\CheckInController;
 use App\Http\Controllers\Dashboard\DashboardController;
+use App\Http\Controllers\Dashboard\OtsBookingController;
+use App\Http\Controllers\Dashboard\PaymentValidationController;
+use App\Http\Controllers\Dashboard\ScheduleBlockController;
 use App\Http\Controllers\Dashboard\VenueSelectionController;
 use App\Http\Controllers\Public\LandingController;
 use App\Http\Controllers\Public\PublicVenueController;
@@ -63,5 +67,22 @@ Route::middleware(['auth', 'role:staff,superadmin'])
 
         Route::middleware('venue.selected')->group(function (): void {
             Route::get('/', [DashboardController::class, 'index'])->name('index');
+
+            Route::get('/validations', [PaymentValidationController::class, 'index'])->name('validations.index');
+            Route::post('/validations/{ulid}', [PaymentValidationController::class, 'update'])->name('validations.update');
+
+            Route::get('/check-in', [CheckInController::class, 'index'])->name('check-in.index');
+            Route::post('/check-in/lookup', [CheckInController::class, 'lookup'])->name('check-in.lookup');
+            Route::post('/check-in', [CheckInController::class, 'store'])->name('check-in.store');
+            Route::post('/check-in/{ulid}/complete', [CheckInController::class, 'complete'])->name('check-in.complete');
+
+            Route::get('/ots', [OtsBookingController::class, 'create'])->name('ots.create');
+            Route::post('/ots', [OtsBookingController::class, 'store'])->name('ots.store');
+
+            Route::get('/schedule', [ScheduleBlockController::class, 'index'])->name('schedule.index');
+            Route::post('/schedule/blocks', [ScheduleBlockController::class, 'store'])->name('schedule.blocks.store');
+            Route::delete('/schedule/blocks/{id}', [ScheduleBlockController::class, 'destroy'])
+                ->whereNumber('id')
+                ->name('schedule.blocks.destroy');
         });
     });

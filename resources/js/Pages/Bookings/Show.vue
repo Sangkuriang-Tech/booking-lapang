@@ -207,6 +207,36 @@ function confirmCancel() {
                 <span class="font-bold">Catatan Status:</span> {{ booking.status_reason }}
             </div>
 
+            <section
+                v-if="booking.status === 'confirmed' && booking.qr_svg_data_uri"
+                aria-label="Tiket QR Check-in"
+                class="mb-6 flex flex-col items-center gap-4 rounded-[var(--radius-card)] border border-success bg-surface p-6 text-center sm:flex-row sm:text-left"
+            >
+                <div class="shrink-0 rounded-[var(--radius-control)] border border-border bg-white p-2">
+                    <img
+                        :src="booking.qr_svg_data_uri"
+                        :alt="`QR Check-in ${booking.code}`"
+                        width="180"
+                        height="180"
+                        class="h-[180px] w-[180px]"
+                    />
+                </div>
+                <div class="space-y-1.5">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-success">
+                        Tiket Siap Digunakan
+                    </p>
+                    <h2 class="font-display text-2xl font-bold text-ink">
+                        Kode Booking: {{ booking.code }}
+                    </h2>
+                    <p class="text-sm text-ink-muted">
+                        Tunjukkan QR Code ini kepada staf venue saat tiba di lokasi. QR hanya berlaku satu kali.
+                    </p>
+                    <p v-if="booking.qr_valid_from && booking.qr_valid_until" class="text-xs font-medium text-ink">
+                        Berlaku: {{ formatTime(booking.qr_valid_from, booking.venue.timezone) }} – {{ formatTime(booking.qr_valid_until, booking.venue.timezone) }}
+                    </p>
+                </div>
+            </section>
+
             <div class="grid gap-6 lg:grid-cols-2">
                 <section class="rounded-[var(--radius-card)] border border-border bg-surface p-6">
                     <h2 class="font-display text-xl font-bold text-ink">
