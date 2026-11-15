@@ -3,6 +3,7 @@
 use App\Actions\Booking\GetAvailableSlots;
 use App\Actions\Booking\HoldSlot;
 use App\Actions\Schedule\CreateScheduleBlock;
+use App\Models\Booking;
 use App\Models\Court;
 use App\Models\User;
 use App\Models\Venue;
@@ -21,8 +22,6 @@ beforeEach(function (): void {
 });
 
 it('serves venue detail with SportsActivityLocation and BreadcrumbList JSON-LD for active venue', function (): void {
-    config(['inertia.testing.ensure_pages_exist' => false]);
-
     $response = $this->get('/venue/antic-futsal-center-contoh');
 
     $response->assertOk()
@@ -89,4 +88,36 @@ it('calculates available slots including post-midnight hours, locked bookings, s
     expect($slot18['price'])->toBe(400000);
     expect($slot24['is_available'])->toBeFalse();
     expect($slot24['unavailable_reason'])->toBe('blocked');
+});
+
+it('serves venues directory with sport, city, and keyword filters and customer booking pages', function (): void {
+    $this->get('/venues?q=Antic&sport=mini-soccer&city=kota-contoh')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Venues/Index')
+            ->has('venues', 1)
+            ->where('venues.0.slug', 'antic-futsal-center-contoh')
+            ->has('available_sports')
+            ->has('available_cities')
+        );
+
+    $customer = User::query()->where('email', 'customer1@example.test')->firstOrFail();
+    $booking = Booking::withoutGlobalScopes()->where('customer_id', $customer->id)->firstOrFail();
+
+    $this->actingAs($customer)
+        ->get('/bookings')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Bookings/Index')
+            ->has('bookings.data')
+        );
+
+    $this->actingAs($customer)
+        ->get("/bookings/{$booking->ulid}")
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Bookings/Show')
+            ->where('booking.ulid', $booking->ulid)
+            ->has('payment_accounts')
+        );
 });

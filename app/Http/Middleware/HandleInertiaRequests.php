@@ -75,6 +75,10 @@ class HandleInertiaRequests extends Middleware
                 'subscription_status' => $activeVenue->subscriptionStatus(),
             ] : null,
             'availableVenues' => $availableVenues,
+            'flash' => [
+                'success' => fn (): ?string => $request->session()->get('success'),
+                'error' => fn (): ?string => $request->session()->get('error'),
+            ],
         ];
     }
 }

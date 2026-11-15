@@ -94,7 +94,7 @@ class CustomerBookingController extends Controller
                 'account_number' => $account->account_number,
                 'account_holder' => $account->account_holder,
                 'qris_image_url' => $account->kind === VenuePaymentAccount::KIND_QRIS
-                    ? route('venues.payment-accounts.qris', ['venue' => $booking->venue->ulid, 'account' => $account->id])
+                    ? route('venues.payment-accounts.qris', ['venueUlid' => $booking->venue->ulid, 'accountId' => $account->id])
                     : null,
             ])
             ->values()
@@ -138,7 +138,7 @@ class CustomerBookingController extends Controller
                     'reject_reason' => $payment->reject_reason,
                     'submitted_at' => $payment->submitted_at?->toIso8601String(),
                     'proof_url' => $payment->proof_path !== null
-                        ? route('payments.proof.show', ['payment' => $payment->ulid])
+                        ? route('payments.proof.show', ['ulid' => $payment->ulid])
                         : null,
                 ])->values()->all(),
             ],

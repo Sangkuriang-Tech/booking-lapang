@@ -24,7 +24,30 @@ class PublicVenueController extends Controller
         $cityFilter = trim((string) $request->query('city', ''));
         $searchQuery = mb_strtolower(trim((string) $request->query('q', '')));
 
-        $venues = $getPublicVenues->execute(withDetails: true)
+        $allActiveVenues = $getPublicVenues->execute(withDetails: true);
+
+        $availableSports = $allActiveVenues
+            ->flatMap(fn (Venue $venue) => $venue->courts->map(fn (Court $court): ?array => $court->sport !== null ? [
+                'slug' => $court->sport->slug,
+                'name' => $court->sport->name,
+            ] : null))
+            ->filter()
+            ->unique('slug')
+            ->sortBy('name')
+            ->values()
+            ->all();
+
+        $availableCities = $allActiveVenues
+            ->map(fn (Venue $venue): array => [
+                'slug' => $venue->city_slug,
+                'name' => $venue->city,
+            ])
+            ->unique('slug')
+            ->sortBy('name')
+            ->values()
+            ->all();
+
+        $venues = $allActiveVenues
             ->filter(function (Venue $venue) use ($sportFilter, $cityFilter, $searchQuery): bool {
                 if ($cityFilter !== '' && $venue->city_slug !== $cityFilter) {
                     return false;
@@ -60,6 +83,9 @@ class PublicVenueController extends Controller
                     'courts_count' => $venue->courts->count(),
                     'min_price_per_hour' => $minPrice !== null ? (int) $minPrice : null,
                     'cover_photo_url' => $coverPhoto !== null ? Storage::disk('public')->url($coverPhoto->path) : null,
+                    'cover_photo_alt' => $coverPhoto?->alt_text ?? $venue->name,
+                    'cover_photo_width' => $coverPhoto?->width ?? 640,
+                    'cover_photo_height' => $coverPhoto?->height ?? 400,
                     'sports' => $venue->courts
                         ->map(fn ($court): ?string => $court->sport?->name)
                         ->filter()
@@ -78,6 +104,8 @@ class PublicVenueController extends Controller
                 'city' => $cityFilter,
                 'q' => $searchQuery,
             ],
+            'available_sports' => $availableSports,
+            'available_cities' => $availableCities,
         ]);
     }
 

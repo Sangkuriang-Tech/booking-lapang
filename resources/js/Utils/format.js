@@ -67,3 +67,58 @@ export function formatTime(isoString, timeZone = 'Asia/Jakarta') {
         timeZone,
     }).format(date);
 }
+
+/**
+ * Resolve Indonesian timezone short label.
+ *
+ * @param {string} [timeZone='Asia/Jakarta']
+ * @returns {string}
+ */
+export function timeZoneLabel(timeZone = 'Asia/Jakarta') {
+    if (timeZone === 'Asia/Makassar') {
+        return 'WITA';
+    }
+    if (timeZone === 'Asia/Jayapura') {
+        return 'WIT';
+    }
+
+    return 'WIB';
+}
+
+/**
+ * Format time range in 24-hour format with explicit venue timezone (e.g. 19.00–20.00 WIB).
+ *
+ * @param {string} startIso
+ * @param {string} endIso
+ * @param {string} [timeZone='Asia/Jakarta']
+ * @returns {string}
+ */
+export function formatTimeRange(startIso, endIso, timeZone = 'Asia/Jakarta') {
+    return `${formatTime(startIso, timeZone)}–${formatTime(endIso, timeZone)} ${timeZoneLabel(timeZone)}`;
+}
+
+/**
+ * Format normalized Indonesian phone number (6281234567890 -> 0812-3456-7890).
+ *
+ * @param {string|null|undefined} phone
+ * @returns {string}
+ */
+export function formatPhone(phone) {
+    if (!phone) {
+        return '-';
+    }
+
+    let digits = String(phone).replace(/\D+/g, '');
+    if (digits.startsWith('62')) {
+        digits = `0${digits.slice(2)}`;
+    }
+
+    if (digits.length <= 4) {
+        return digits;
+    }
+    if (digits.length <= 8) {
+        return `${digits.slice(0, 4)}-${digits.slice(4)}`;
+    }
+
+    return `${digits.slice(0, 4)}-${digits.slice(4, 8)}-${digits.slice(8)}`;
+}
