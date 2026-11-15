@@ -1,16 +1,28 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\Admin\AdminVenueController;
+use App\Http\Controllers\Admin\CrossVenueTransactionController;
+use App\Http\Controllers\Admin\OwnerSubscriptionController;
+use App\Http\Controllers\Admin\SubscriptionPlanController;
 use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\Auth\StaffAuthController;
 use App\Http\Controllers\Booking\CustomerBookingController;
 use App\Http\Controllers\Booking\PaymentProofController;
 use App\Http\Controllers\Booking\VenueQrisController;
 use App\Http\Controllers\Dashboard\CheckInController;
+use App\Http\Controllers\Dashboard\CourtManagementController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Dashboard\OtsBookingController;
+use App\Http\Controllers\Dashboard\PaymentAccountController;
 use App\Http\Controllers\Dashboard\PaymentValidationController;
+use App\Http\Controllers\Dashboard\ReportController;
 use App\Http\Controllers\Dashboard\ScheduleBlockController;
+use App\Http\Controllers\Dashboard\StaffManagementController;
+use App\Http\Controllers\Dashboard\VenuePhotoController;
 use App\Http\Controllers\Dashboard\VenueSelectionController;
+use App\Http\Controllers\Dashboard\VenueSettingsController;
 use App\Http\Controllers\Public\LandingController;
 use App\Http\Controllers\Public\PublicVenueController;
 use App\Http\Controllers\Public\SeoController;
@@ -84,5 +96,62 @@ Route::middleware(['auth', 'role:staff,superadmin'])
             Route::delete('/schedule/blocks/{id}', [ScheduleBlockController::class, 'destroy'])
                 ->whereNumber('id')
                 ->name('schedule.blocks.destroy');
+
+            Route::get('/settings/venue', [VenueSettingsController::class, 'edit'])->name('settings.venue.edit');
+            Route::put('/settings/venue', [VenueSettingsController::class, 'update'])->name('settings.venue.update');
+            Route::put('/settings/operating-hours', [VenueSettingsController::class, 'updateHours'])->name('settings.hours.update');
+
+            Route::post('/photos', [VenuePhotoController::class, 'store'])->name('photos.store');
+            Route::post('/photos/{id}/cover', [VenuePhotoController::class, 'setCover'])->whereNumber('id')->name('photos.cover');
+            Route::delete('/photos/{id}', [VenuePhotoController::class, 'destroy'])->whereNumber('id')->name('photos.destroy');
+
+            Route::get('/courts', [CourtManagementController::class, 'index'])->name('courts.index');
+            Route::post('/court-categories', [CourtManagementController::class, 'storeCategory'])->name('court-categories.store');
+            Route::put('/court-categories/{id}', [CourtManagementController::class, 'updateCategory'])->whereNumber('id')->name('court-categories.update');
+            Route::delete('/court-categories/{id}', [CourtManagementController::class, 'destroyCategory'])->whereNumber('id')->name('court-categories.destroy');
+
+            Route::post('/courts', [CourtManagementController::class, 'storeCourt'])->name('courts.store');
+            Route::put('/courts/{ulid}', [CourtManagementController::class, 'updateCourt'])->name('courts.update');
+            Route::delete('/courts/{ulid}', [CourtManagementController::class, 'destroyCourt'])->name('courts.destroy');
+
+            Route::post('/courts/{ulid}/price-rules', [CourtManagementController::class, 'storePriceRule'])->name('price-rules.store');
+            Route::put('/price-rules/{ruleId}', [CourtManagementController::class, 'updatePriceRule'])->whereNumber('ruleId')->name('price-rules.update');
+            Route::delete('/price-rules/{ruleId}', [CourtManagementController::class, 'destroyPriceRule'])->whereNumber('ruleId')->name('price-rules.destroy');
+
+            Route::get('/payment-accounts', [PaymentAccountController::class, 'index'])->name('payment-accounts.index');
+            Route::post('/payment-accounts', [PaymentAccountController::class, 'store'])->name('payment-accounts.store');
+            Route::put('/payment-accounts/{id}', [PaymentAccountController::class, 'update'])->whereNumber('id')->name('payment-accounts.update');
+            Route::post('/payment-accounts/{id}/toggle', [PaymentAccountController::class, 'toggle'])->whereNumber('id')->name('payment-accounts.toggle');
+
+            Route::get('/staff', [StaffManagementController::class, 'index'])->name('staff.index');
+            Route::post('/staff', [StaffManagementController::class, 'store'])->name('staff.store');
+            Route::delete('/staff/{userUlid}', [StaffManagementController::class, 'destroy'])->name('staff.destroy');
+
+            Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+            Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
         });
+    });
+
+Route::middleware(['auth', 'role:superadmin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function (): void {
+        Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+        Route::get('/plans', [SubscriptionPlanController::class, 'index'])->name('plans.index');
+        Route::post('/plans', [SubscriptionPlanController::class, 'store'])->name('plans.store');
+        Route::put('/plans/{id}', [SubscriptionPlanController::class, 'update'])->whereNumber('id')->name('plans.update');
+
+        Route::get('/subscriptions', [OwnerSubscriptionController::class, 'index'])->name('subscriptions.index');
+        Route::post('/subscriptions', [OwnerSubscriptionController::class, 'store'])->name('subscriptions.store');
+        Route::post('/subscriptions/{id}/status', [OwnerSubscriptionController::class, 'updateStatus'])->whereNumber('id')->name('subscriptions.status');
+
+        Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
+        Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
+        Route::post('/users/{ulid}/status', [AdminUserController::class, 'updateStatus'])->name('users.status');
+
+        Route::get('/venues', [AdminVenueController::class, 'index'])->name('venues.index');
+        Route::post('/venues', [AdminVenueController::class, 'store'])->name('venues.store');
+
+        Route::get('/transactions', [CrossVenueTransactionController::class, 'index'])->name('transactions.index');
     });

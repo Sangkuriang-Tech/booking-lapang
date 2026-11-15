@@ -41,20 +41,31 @@ class HandleInertiaRequests extends Middleware
         $activeVenue = $venueContext->venue();
 
         $availableVenues = [];
+        $activeVenueRole = null;
+
         if ($user !== null && $user->isStaff()) {
             $availableVenues = $user->venues()
                 ->whereNull('venues.deleted_at')
                 ->orderBy('venues.name')
-                ->get(['venues.ulid', 'venues.name', 'venues.city', 'venues.timezone'])
-                ->map(fn ($venue): array => [
-                    'ulid' => $venue->ulid,
-                    'name' => $venue->name,
-                    'city' => $venue->city,
-                    'timezone' => $venue->timezone,
-                    'role' => $venue->pivot->role,
-                ])
+                ->get(['venues.id', 'venues.ulid', 'venues.owner_id', 'venues.name', 'venues.city', 'venues.timezone'])
+                ->map(function ($venue) use ($activeVenue, &$activeVenueRole): array {
+                    if ($activeVenue !== null && $venue->id === $activeVenue->id) {
+                        $activeVenueRole = $venue->pivot->role;
+                    }
+
+                    return [
+                        'ulid' => $venue->ulid,
+                        'name' => $venue->name,
+                        'city' => $venue->city,
+                        'timezone' => $venue->timezone,
+                        'role' => $venue->pivot->role,
+                        'subscription_status' => $venue->subscriptionStatus(),
+                    ];
+                })
                 ->values()
                 ->all();
+        } elseif ($user !== null && $user->isSuperadmin()) {
+            $activeVenueRole = 'superadmin';
         }
 
         return [
@@ -72,6 +83,7 @@ class HandleInertiaRequests extends Middleware
                 'name' => $activeVenue->name,
                 'city' => $activeVenue->city,
                 'timezone' => $activeVenue->timezone,
+                'role' => $activeVenueRole,
                 'subscription_status' => $activeVenue->subscriptionStatus(),
             ] : null,
             'availableVenues' => $availableVenues,

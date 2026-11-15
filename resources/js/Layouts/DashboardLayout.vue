@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue';
-import { Link, useForm, usePage } from '@inertiajs/vue3';
+import { Link, router, useForm, usePage } from '@inertiajs/vue3';
 import Toast from '@/Components/UI/Toast.vue';
 
 const props = defineProps({
@@ -16,7 +16,17 @@ const props = defineProps({
 
 const emit = defineEmits(['closeToast', 'switchVenue']);
 const sidebarOpen = ref(false);
+const switchModalOpen = ref(false);
+const switchingVenue = ref(false);
 const page = usePage();
+
+const user = computed(() => page.props.auth?.user || null);
+const isSuperadmin = computed(() => user.value?.role === 'superadmin');
+const isOwnerOrSuperadmin = computed(
+    () => isSuperadmin.value || page.props.activeVenue?.role === 'owner',
+);
+const availableVenues = computed(() => page.props.availableVenues || []);
+const activeVenueStatus = computed(() => page.props.activeVenue?.subscription_status || 'active');
 
 const resolvedVenueName = computed(() => {
     if (props.activeVenueName) {
@@ -26,7 +36,7 @@ const resolvedVenueName = computed(() => {
     return page.props.activeVenue?.name || 'Mode Superadmin';
 });
 
-const canSwitchVenue = computed(() => (page.props.availableVenues?.length || 0) > 1);
+const canSwitchVenue = computed(() => availableVenues.value.length > 1);
 
 const resolvedToast = computed(() => {
     if (props.toast) {
@@ -46,12 +56,29 @@ const resolvedToast = computed(() => {
 
 const currentUrl = computed(() => page.url || '');
 
-const navItems = [
+const operationalNavItems = [
     { href: '/dashboard', label: 'Ringkasan', exact: true },
     { href: '/dashboard/validations', label: 'Validasi Pembayaran', exact: false },
     { href: '/dashboard/check-in', label: 'Scan QR & Check-in', exact: false },
     { href: '/dashboard/ots', label: 'Booking OTS', exact: false },
     { href: '/dashboard/schedule', label: 'Jadwal & Blokir Slot', exact: false },
+];
+
+const ownerNavItems = [
+    { href: '/dashboard/settings/venue', label: 'Pengaturan Venue', exact: false },
+    { href: '/dashboard/courts', label: 'Lapangan & Harga', exact: false },
+    { href: '/dashboard/payment-accounts', label: 'Rekening / QRIS', exact: false },
+    { href: '/dashboard/staff', label: 'Karyawan', exact: false },
+    { href: '/dashboard/reports', label: 'Laporan Keuangan', exact: false },
+];
+
+const adminNavItems = [
+    { href: '/admin', label: 'Ringkasan Superadmin', exact: true },
+    { href: '/admin/plans', label: 'Master Paket', exact: false },
+    { href: '/admin/subscriptions', label: 'Langganan Owner', exact: false },
+    { href: '/admin/users', label: 'Akun Pemilik & Staf', exact: false },
+    { href: '/admin/venues', label: 'Kelola Venue', exact: false },
+    { href: '/admin/transactions', label: 'Transaksi Lintas Venue', exact: false },
 ];
 
 function isActive(item) {
@@ -60,6 +87,32 @@ function isActive(item) {
     }
 
     return currentUrl.value.startsWith(item.href);
+}
+
+function subscriptionBadge(status) {
+    if (status === 'grace_period') {
+        return { label: 'Masa Tenggang', classes: 'bg-amber-100 text-amber-800 border-amber-300' };
+    }
+    if (status === 'inactive') {
+        return { label: 'Nonaktif', classes: 'bg-red-100 text-red-800 border-red-300' };
+    }
+
+    return { label: 'Aktif', classes: 'bg-emerald-100 text-emerald-800 border-emerald-300' };
+}
+
+function selectVenue(venueUlid) {
+    switchingVenue.value = true;
+    router.post(
+        '/dashboard/venues/select',
+        { venue_ulid: venueUlid },
+        {
+            preserveScroll: true,
+            onFinish: () => {
+                switchingVenue.value = false;
+                switchModalOpen.value = false;
+            },
+        },
+    );
 }
 
 const logoutForm = useForm({});
@@ -84,7 +137,7 @@ function logout() {
         >
             <div class="flex items-center justify-between border-b border-border px-4 py-3.5">
                 <Link
-                    href="/dashboard"
+                    :href="isSuperadmin && !page.props.activeVenue ? '/admin' : '/dashboard'"
                     class="inline-flex min-h-[44px] items-center gap-2 font-display text-xl font-bold text-primary"
                 >
                     <span
@@ -108,19 +161,52 @@ function logout() {
                 </button>
             </div>
 
-            <nav aria-label="Navigasi dashboard" class="flex-1 space-y-1 p-3">
+            <nav aria-label="Navigasi dashboard" class="flex-1 space-y-5 overflow-y-auto p-3">
                 <slot name="sidebar">
-                    <Link
-                        v-for="item in navItems"
-                        :key="item.href"
-                        :href="item.href"
-                        :class="isActive(item)
-                            ? 'bg-primary text-white'
-                            : 'text-ink hover:bg-canvas'"
-                        class="flex min-h-[44px] items-center rounded-[var(--radius-control)] px-3 py-2 text-sm font-semibold transition-colors"
-                    >
-                        {{ item.label }}
-                    </Link>
+                    <div v-if="page.props.activeVenue" class="space-y-1">
+                        <p class="px-3 text-xs font-semibold tracking-wide text-ink-muted uppercase">
+                            Operasional Venue
+                        </p>
+                        <Link
+                            v-for="item in operationalNavItems"
+                            :key="item.href"
+                            :href="item.href"
+                            :class="isActive(item) ? 'bg-primary text-white' : 'text-ink hover:bg-canvas'"
+                            class="flex min-h-[44px] items-center rounded-[var(--radius-control)] px-3 py-2 text-sm font-semibold transition-colors"
+                        >
+                            {{ item.label }}
+                        </Link>
+                    </div>
+
+                    <div v-if="page.props.activeVenue && isOwnerOrSuperadmin" class="space-y-1">
+                        <p class="px-3 text-xs font-semibold tracking-wide text-ink-muted uppercase">
+                            Pemilik Venue
+                        </p>
+                        <Link
+                            v-for="item in ownerNavItems"
+                            :key="item.href"
+                            :href="item.href"
+                            :class="isActive(item) ? 'bg-primary text-white' : 'text-ink hover:bg-canvas'"
+                            class="flex min-h-[44px] items-center rounded-[var(--radius-control)] px-3 py-2 text-sm font-semibold transition-colors"
+                        >
+                            {{ item.label }}
+                        </Link>
+                    </div>
+
+                    <div v-if="isSuperadmin" class="space-y-1">
+                        <p class="px-3 text-xs font-semibold tracking-wide text-ink-muted uppercase">
+                            Panel Superadmin
+                        </p>
+                        <Link
+                            v-for="item in adminNavItems"
+                            :key="item.href"
+                            :href="item.href"
+                            :class="isActive(item) ? 'bg-primary text-white' : 'text-ink hover:bg-canvas'"
+                            class="flex min-h-[44px] items-center rounded-[var(--radius-control)] px-3 py-2 text-sm font-semibold transition-colors"
+                        >
+                            {{ item.label }}
+                        </Link>
+                    </div>
                 </slot>
             </nav>
         </aside>
@@ -146,13 +232,14 @@ function logout() {
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <Link
+                    <button
                         v-if="canSwitchVenue"
-                        href="/dashboard/venues/select"
+                        type="button"
                         class="inline-flex min-h-[44px] items-center rounded-[var(--radius-control)] border border-border bg-surface px-3.5 py-2 text-sm font-semibold text-primary hover:bg-canvas"
+                        @click="switchModalOpen = true"
                     >
                         Ganti Venue
-                    </Link>
+                    </button>
 
                     <button
                         type="button"
@@ -165,8 +252,71 @@ function logout() {
             </header>
 
             <main id="dashboard-content" class="flex-1 p-4 sm:p-6">
+                <div
+                    v-if="page.props.activeVenue && activeVenueStatus === 'grace_period'"
+                    role="alert"
+                    class="mb-4 rounded-[var(--radius-control)] border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+                >
+                    <strong>Masa Tenggang Langganan (H+1 s/d H+7):</strong> Venue disembunyikan dari pencarian publik dan booking online baru ditutup. Silakan hubungi Superadmin untuk perpanjangan paket.
+                </div>
+
+                <div
+                    v-if="page.props.activeVenue && activeVenueStatus === 'inactive'"
+                    role="alert"
+                    class="mb-4 rounded-[var(--radius-control)] border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-900"
+                >
+                    <strong>Langganan Nonaktif:</strong> Pembuatan booking baru (online maupun OTS) dikunci sampai langganan diperpanjang.
+                </div>
+
                 <slot />
             </main>
+        </div>
+
+        <div
+            v-if="switchModalOpen"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="switch-venue-title"
+        >
+            <div class="w-full max-w-md rounded-[var(--radius-card)] border border-border bg-surface p-5 shadow-sm">
+                <div class="mb-4 flex items-center justify-between">
+                    <h2 id="switch-venue-title" class="text-lg font-bold text-ink">
+                        Pilih Venue Aktif
+                    </h2>
+                    <button
+                        type="button"
+                        aria-label="Tutup modal"
+                        class="inline-flex min-h-[40px] min-w-[40px] items-center justify-center rounded-[var(--radius-control)] text-ink-muted hover:bg-canvas"
+                        @click="switchModalOpen = false"
+                    >
+                        ✕
+                    </button>
+                </div>
+
+                <div class="space-y-2">
+                    <button
+                        v-for="venue in availableVenues"
+                        :key="venue.ulid"
+                        type="button"
+                        :disabled="switchingVenue"
+                        class="flex w-full items-center justify-between rounded-[var(--radius-control)] border border-border p-3 text-left transition-colors hover:bg-canvas disabled:opacity-50"
+                        :class="page.props.activeVenue?.ulid === venue.ulid ? 'border-primary bg-canvas' : ''"
+                        @click="selectVenue(venue.ulid)"
+                    >
+                        <div>
+                            <p class="text-sm font-bold text-ink">{{ venue.name }}</p>
+                            <p class="text-xs text-ink-muted">{{ venue.city }} · Peran: {{ venue.role === 'owner' ? 'Pemilik' : 'Karyawan' }}</p>
+                        </div>
+                        <span
+                            class="rounded-full border px-2.5 py-0.5 text-xs font-semibold"
+                            :class="subscriptionBadge(venue.subscription_status).classes"
+                        >
+                            {{ subscriptionBadge(venue.subscription_status).label }}
+                        </span>
+                    </button>
+                </div>
+            </div>
         </div>
 
         <Toast

@@ -78,7 +78,11 @@ Dokumen ini mencatat seluruh keputusan bisnis, asumsi teknis, dan perilaku *edge
 - **Scheduler Pasca-Main:** Command `bookings:transition-ended` (`TransitionEndedBookings`) dijadwalkan setiap menit di `routes/console.php` untuk mengubah `checked_in` yang melewati `ends_at` menjadi `completed`, dan `confirmed` yang melewati `ends_at` tanpa check-in menjadi `no_show` (`actor_kind = 'system'`).
 
 ### Fase F5 — Dashboard Pemilik dan Superadmin
-- *(Agent: catat asumsi terkait perhitungan laporan, ekspor CSV/Excel, atau manajemen langganan di sini)*
+- **Upload Foto Venue & Lapangan (`UploadVenuePhoto`):** Foto divalidasi via `finfo` (allowlist JPG/PNG/WebP, maks 5 MB, dimensi maks `4000x4000px`), di-reencode via GD menjadi WebP utama (`<=1600px`) dan varian `640px` serta AVIF (menghapus metadata EXIF/GPS), disimpan di disk `public/venue-photos/{venue_ulid}/` dengan dimensi `width`/`height` eksplisit dan file `.htaccess` penonaktif eksekusi script (`php_flag engine off`, `Options -ExecCGI -Indexes`).
+- **Keamanan Rekening / QRIS Tujuan (Threat T10):** `CreatePaymentAccount`, `UpdatePaymentAccount`, dan `TogglePaymentAccountStatus` mewajibkan verifikasi password akun (`current_password`) pada endpoint dashboard, menerapkan jeda `visible_from = now() + 24 jam` untuk perubahan atau penambahan rekening ke-2 dst. (rekening pertama langsung `now()`), mengirim email `PaymentAccountChangedMail` ke seluruh pemilik venue dan superadmin, serta mencatat ke `audit_logs`.
+- **Laporan Keuangan & Selisih (Threat T11):** `GetVenueFinancialReport` menghitung pendapatan (`payments.status = 'approved'`) dan jumlah booking per status berdasarkan `play_date` pada `venue_id` aktif saja, mendeteksi selisih (booking `confirmed`/`checked_in`/`completed` tanpa pembayaran `approved`), dan membatasi ekspor CSV (`ExportVenueReport`) hanya jika `can_export_reports = true`.
+- **Langganan & Timezone (`Subscription::statusOn`):** Perbandingan tanggal `starts_on` dan `ends_on` dikonversi ke zona waktu venue (`CarbonImmutable::parse($dateString, $timezone)->startOfDay()`) agar konsisten dengan tanggal lokal venue sejak pukul 00.00.
+- **Panel Superadmin & Modal Ganti Venue:** Daftar venue pada modal **Pilih Venue Aktif** di `DashboardLayout.vue` berasal dari `HandleInertiaRequests` (query `venue_users` di server lengkap dengan `subscription_status`), dan setiap kunjungan ke `/admin/transactions` dicatat ke `audit_logs`.
 
 ### Fase F6 — Notifikasi dan Poles
 - *(Agent: catat asumsi terkait jadwal queue atau channel notifikasi di sini)*

@@ -3,14 +3,18 @@
 namespace App\Actions\PaymentAccount;
 
 use App\Actions\Audit\RecordAuditLog;
+use App\Actions\PaymentAccount\Concerns\ManagesPaymentAccountSecurity;
 use App\Models\User;
 use App\Models\Venue;
 use App\Models\VenuePaymentAccount;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class CreatePaymentAccount
 {
+    use ManagesPaymentAccountSecurity;
+
     public function __construct(
         private readonly RecordAuditLog $recordAuditLog,
     ) {}
@@ -18,8 +22,12 @@ class CreatePaymentAccount
     /**
      * @param  array<string, mixed>  $data
      */
-    public function execute(User $actor, Venue $venue, array $data): VenuePaymentAccount
+    public function execute(User $actor, Venue $venue, array $data, bool $requireReauth = false): VenuePaymentAccount
     {
+        if ($requireReauth || array_key_exists('current_password', $data)) {
+            $this->verifyReauthentication($actor, $data['current_password'] ?? null);
+        }
+
         $subscription = $venue->activeSubscription();
 
         if ($subscription === null || $subscription->isInactiveOn(timezone: $venue->timezone)) {
@@ -42,20 +50,25 @@ class CreatePaymentAccount
             ]);
         }
 
+        $qrisImagePath = $data['qris_image_path'] ?? null;
+        if (($data['qris_image'] ?? null) instanceof UploadedFile) {
+            $qrisImagePath = $this->storeValidatedQrisImage($data['qris_image']);
+        }
+
         $hasAnyAccount = VenuePaymentAccount::withoutGlobalScopes()
             ->where('venue_id', $venue->id)
             ->exists();
 
         $visibleFrom = $hasAnyAccount ? now()->addHours(24) : now();
 
-        return DB::transaction(function () use ($actor, $venue, $data, $visibleFrom): VenuePaymentAccount {
+        $account = DB::transaction(function () use ($actor, $venue, $data, $qrisImagePath, $visibleFrom): VenuePaymentAccount {
             $account = VenuePaymentAccount::query()->create([
                 'venue_id' => $venue->id,
                 'kind' => $data['kind'],
                 'bank_name' => $data['bank_name'] ?? null,
                 'account_number' => $data['account_number'] ?? null,
                 'account_holder' => $data['account_holder'] ?? null,
-                'qris_image_path' => $data['qris_image_path'] ?? null,
+                'qris_image_path' => $qrisImagePath,
                 'is_active' => true,
                 'visible_from' => $visibleFrom,
                 'created_by' => $actor->id,
@@ -75,5 +88,9 @@ class CreatePaymentAccount
 
             return $account;
         });
+
+        $this->notifyOwnersAndSuperadmins($venue, $account, $actor, 'Penambahan rekening/QRIS tujuan baru');
+
+        return $account;
     }
 }

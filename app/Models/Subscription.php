@@ -80,8 +80,8 @@ class Subscription extends Model
             : CarbonImmutable::now($timezone)
         )->setTimezone($timezone)->startOfDay();
 
-        $startsOn = $this->starts_on->startOfDay();
-        $endsOn = $this->ends_on->startOfDay();
+        $startsOn = CarbonImmutable::parse($this->starts_on->toDateString(), $timezone)->startOfDay();
+        $endsOn = CarbonImmutable::parse($this->ends_on->toDateString(), $timezone)->startOfDay();
         $graceEndsOn = $endsOn->addDays(self::GRACE_PERIOD_DAYS);
 
         if ($today->betweenIncluded($startsOn, $endsOn)) {
