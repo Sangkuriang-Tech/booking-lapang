@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\Auth\StaffAuthController;
+use App\Http\Controllers\Booking\CustomerBookingController;
+use App\Http\Controllers\Booking\PaymentProofController;
+use App\Http\Controllers\Booking\VenueQrisController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Dashboard\VenueSelectionController;
 use App\Http\Controllers\Public\LandingController;
@@ -11,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [LandingController::class, 'index'])->name('home');
 Route::get('/venues', [PublicVenueController::class, 'index'])->name('venues.index');
+Route::get('/venue/{slug}', [PublicVenueController::class, 'show'])->name('venues.show');
 Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('seo.sitemap');
 Route::get('/robots.txt', [SeoController::class, 'robots'])->name('seo.robots');
 Route::get('/llms.txt', [SeoController::class, 'llms'])->name('seo.llms');
@@ -26,6 +30,29 @@ Route::middleware('guest')->group(function (): void {
 Route::post('/logout', [StaffAuthController::class, 'destroy'])
     ->middleware('auth')
     ->name('logout');
+
+Route::middleware(['auth', 'role:customer'])
+    ->prefix('bookings')
+    ->name('bookings.')
+    ->group(function (): void {
+        Route::get('/', [CustomerBookingController::class, 'index'])->name('index');
+        Route::post('/', [CustomerBookingController::class, 'store'])
+            ->middleware('throttle:booking-hold')
+            ->name('store');
+        Route::get('/{ulid}', [CustomerBookingController::class, 'show'])->name('show');
+        Route::post('/{ulid}/proof', [CustomerBookingController::class, 'submitProof'])
+            ->middleware('throttle:payment-proof')
+            ->name('proof.store');
+        Route::post('/{ulid}/cancel', [CustomerBookingController::class, 'cancel'])->name('cancel');
+    });
+
+Route::middleware('auth')->group(function (): void {
+    Route::get('/payments/{ulid}/proof', [PaymentProofController::class, 'show'])
+        ->name('payments.proof.show');
+    Route::get('/venues/{venueUlid}/payment-accounts/{accountId}/qris', [VenueQrisController::class, 'show'])
+        ->whereNumber('accountId')
+        ->name('venues.payment-accounts.qris');
+});
 
 Route::middleware(['auth', 'role:staff,superadmin'])
     ->prefix('dashboard')

@@ -25,6 +25,14 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => EnsureRole::class,
             'venue.selected' => EnsureActiveVenueSelected::class,
         ]);
+
+        $middleware->redirectGuestsTo(function (Request $request): string {
+            if ($request->is('dashboard') || $request->is('dashboard/*')) {
+                return route('staff.login');
+            }
+
+            return route('auth.google.redirect');
+        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
