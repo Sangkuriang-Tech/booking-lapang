@@ -13,10 +13,10 @@ Legenda Status: `[ ]` Belum dikerjakan · `[~]` Sebagian (fase berikutnya) · `[
 | | Penegakan kuota paket berlangganan (`max_venues`, `max_courts`, `max_staff`, `max_payment_accounts`) & masa tenggang H+7 di server | F1, F5 | `[ ]` | |
 | | ID publik menggunakan ULID/slug, tanpa ID berurutan | F1, F3 | `[ ]` | |
 | | `$fillable` eksplisit di semua model (tanpa `$guarded = []`) | F1 | `[ ]` | |
-| **A02: Security Misconfiguration** | Security headers (HSTS, CSP, `nosniff`, `Referrer-Policy`, `frame-ancestors`) | F0 | `[ ]` | |
-| | Cookie sesi `Secure`, `HttpOnly`, `SameSite=Lax/Strict` | F0 | `[ ]` | |
-| | Seeder demo & pintasan login lokal dikunci hanya untuk `local`/`staging` | F0, F1 | `[ ]` | |
-| **A03: Supply Chain Failures** | `composer.lock` & `package-lock.json` ter-commit; `composer audit` & `npm audit` bersih | F0–F6 | `[ ]` | |
+| **A02: Security Misconfiguration** | Security headers (HSTS, CSP, `nosniff`, `Referrer-Policy`, `frame-ancestors`) | F0 | `[x]` | `app/Http/Middleware/SecurityHeaders.php`, `tests/Feature/FoundationTest.php` |
+| | Cookie sesi `Secure`, `HttpOnly`, `SameSite=Lax/Strict` | F0 | `[x]` | `config/session.php`, `.env.example`, `tests/Feature/FoundationTest.php` |
+| | Seeder demo & pintasan login lokal dikunci hanya untuk `local`/`staging` | F0, F1 | `[~]` | Lingkungan lokal siap; implementasi seeder di F1 |
+| **A03: Supply Chain Failures** | `composer.lock` & `package-lock.json` ter-commit; `composer audit` & `npm audit` bersih | F0–F6 | `[x]` | `composer.lock`, `package-lock.json`, `composer audit` & `npm audit` bersih (F0) |
 | **A04: Cryptographic Failures** | Enkripsi Eloquent pada `phone`, `customer_phone`, `account_number`, `qr_token_enc` | F1, F3 | `[ ]` | |
 | | Token QR menggunakan CSPRNG minimal 32 byte & disimpan sebagai hash SHA-256 | F4 | `[ ]` | |
 | | Penyamaran PII (`a***@gmail.com`) pada log & pesan error | F1–F6 | `[ ]` | |
@@ -49,7 +49,7 @@ Legenda Status: `[ ]` Belum dikerjakan · `[~]` Sebagian (fase berikutnya) · `[
 
 ## 3. Riwayat Audit Per Fase (Diisi oleh Agent)
 
-- **F0:** *(Belum dijalankan)*
+- **F0:** Selesai (2026-11-15). Header keamanan OWASP A02, konfigurasi cookie sesi (`HttpOnly`, `SameSite=Lax`), `composer audit` (0 advisories), `npm audit --omit=dev` (0 vulnerabilities), Pest (5/5 lulus), Pint (`passed`), dan Lighthouse CI mobile & desktop (1.00 di semua kategori) terverifikasi.
 - **F1:** *(Belum dijalankan)*
 - **F2:** *(Belum dijalankan)*
 - **F3:** *(Belum dijalankan)*

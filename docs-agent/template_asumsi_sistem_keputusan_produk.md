@@ -44,7 +44,11 @@ Dokumen ini mencatat seluruh keputusan bisnis, asumsi teknis, dan perilaku *edge
 ## 2. Log Asumsi Tambahan Per Fase (Diisi oleh Agent)
 
 ### Fase F0 — Fondasi
-- *(Agent: catat konfigurasi environment, font yang dipilih, atau asumsi setup di sini)*
+- **Stack & Toolchain:** Laravel `v13.42.0` (`inertiajs/inertia-laravel` `v3.7.0`, `pestphp/pest` `v4.7.8`, `laravel/pint` `v1.32.3`), Vue `3`, `@inertiajs/vue3`, `@vue/server-renderer`, Tailwind CSS `v4` (`@tailwindcss/vite`), dan `@lhci/cli` dijalankan pada PHP `8.3.7` (Laragon) dan Node.js `v26.13.1`.
+- **Database:** `.env` dan `.env.example` dikonfigurasi menggunakan PostgreSQL (`DB_CONNECTION=pgsql`, port `5432`, database `booking_lapang`). Belum ada migrasi tabel bisnis F1 pada fase ini.
+- **Tipografi & Visual:** Dipilih **Barlow Condensed** bobot `600` dan `700` (subset latin `.woff2` self-hosted di `public/fonts/`, `font-display: swap`, preload bobot `700` di `resources/views/app.blade.php`) dan system font stack untuk body. Seluruh design token didefinisikan di `@theme` (`resources/css/app.css`) dengan **nol gradient** termasuk pada `.skeleton-pulse` (pulse opacity murni, statis saat `prefers-reduced-motion: reduce`).
+- **SSR & Lighthouse CI:** Entry SSR (`resources/js/ssr.js`) diaktifkan di `vite.config.js` (`bootstrap/ssr/ssr.js`). Konfigurasi Lighthouse CI dibagi menjadi `lighthouserc.cjs` (profil mobile) dan `lighthouserc.desktop.cjs` (profil desktop).
+- **Security Headers A02:** Middleware `App\Http\Middleware\SecurityHeaders` menambahkan `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy`, `Strict-Transport-Security` (saat HTTPS/produksi), dan `Content-Security-Policy` (ketika bukan Vite HMR dev server).
 
 ### Fase F1 — Data dan Akses
 - *(Agent: catat asumsi terkait migrasi, seeder, kuota paket, atau aturan keanggotaan multi-venue di sini)*
