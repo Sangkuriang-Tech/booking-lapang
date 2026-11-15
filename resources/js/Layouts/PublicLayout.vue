@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import Toast from '@/Components/UI/Toast.vue';
 
@@ -12,6 +12,28 @@ const props = defineProps({
 
 const emit = defineEmits(['closeToast']);
 const mobileMenuOpen = ref(false);
+const isScrolled = ref(false);
+
+const navItems = [
+    { label: 'Kategori', href: '/#kategori' },
+    { label: 'Cara Kerja', href: '/#cara-kerja' },
+    { label: 'Venue', href: '/#venue-unggulan' },
+    { label: 'Untuk Pemilik', href: '/#pemilik-venue' },
+    { label: 'FAQ', href: '/#faq' },
+];
+
+function handleScroll() {
+    isScrolled.value = window.scrollY > 24;
+}
+
+onMounted(() => {
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+});
+
+onBeforeUnmount(() => {
+    window.removeEventListener('scroll', handleScroll);
+});
 </script>
 
 <template>
@@ -23,10 +45,14 @@ const mobileMenuOpen = ref(false);
             Lewati ke konten utama
         </a>
 
-        <header class="sticky top-0 z-40 border-b border-border bg-surface">
-            <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+        <header
+            class="sticky top-0 z-40 border-b border-border bg-surface transition-[padding] duration-200"
+            :class="isScrolled ? 'py-1.5' : 'py-2.5'"
+        >
+            <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
                 <Link
                     href="/"
+                    prefetch
                     class="inline-flex min-h-[44px] items-center gap-2.5 font-display text-2xl font-bold tracking-tight text-primary"
                 >
                     <span
@@ -38,20 +64,29 @@ const mobileMenuOpen = ref(false);
                     <span>ArenaKita</span>
                 </Link>
 
-                <nav aria-label="Navigasi utama" class="hidden items-center gap-2 md:flex">
+                <nav aria-label="Navigasi utama" class="hidden items-center gap-1 md:flex">
                     <Link
                         href="/"
                         prefetch
-                        class="inline-flex min-h-[44px] items-center rounded-[var(--radius-control)] px-3.5 py-2 text-sm font-semibold text-ink hover:bg-canvas"
+                        class="inline-flex min-h-[44px] items-center rounded-[var(--radius-control)] px-3 py-2 text-sm font-semibold text-ink hover:bg-canvas"
                     >
                         Beranda
                     </Link>
                     <a
-                        href="#fitur-fondasi"
-                        class="inline-flex min-h-[44px] items-center rounded-[var(--radius-control)] px-3.5 py-2 text-sm font-semibold text-ink-muted hover:bg-canvas hover:text-ink"
+                        v-for="item in navItems"
+                        :key="item.href"
+                        :href="item.href"
+                        class="inline-flex min-h-[44px] items-center rounded-[var(--radius-control)] px-3 py-2 text-sm font-semibold text-ink-muted hover:bg-canvas hover:text-ink"
                     >
-                        Komponen UI
+                        {{ item.label }}
                     </a>
+                    <Link
+                        href="/venues"
+                        prefetch
+                        class="ml-2 inline-flex min-h-[44px] items-center rounded-[var(--radius-control)] bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-hover"
+                    >
+                        Cari Lapangan
+                    </Link>
                 </nav>
 
                 <button
@@ -84,12 +119,21 @@ const mobileMenuOpen = ref(false);
                         Beranda
                     </Link>
                     <a
-                        href="#fitur-fondasi"
+                        v-for="item in navItems"
+                        :key="item.href"
+                        :href="item.href"
                         class="inline-flex min-h-[44px] items-center rounded-[var(--radius-control)] px-3 py-2 text-sm font-semibold text-ink-muted hover:bg-canvas hover:text-ink"
                         @click="mobileMenuOpen = false"
                     >
-                        Komponen UI
+                        {{ item.label }}
                     </a>
+                    <Link
+                        href="/venues"
+                        class="mt-1 inline-flex min-h-[44px] items-center justify-center rounded-[var(--radius-control)] bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-hover"
+                        @click="mobileMenuOpen = false"
+                    >
+                        Cari Lapangan
+                    </Link>
                 </div>
             </nav>
         </header>
@@ -99,9 +143,94 @@ const mobileMenuOpen = ref(false);
         </main>
 
         <footer class="border-t border-border bg-surface">
-            <div class="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-6 text-sm text-ink-muted sm:flex-row sm:items-center sm:justify-between sm:px-6">
-                <p class="font-semibold text-ink">ArenaKita — Platform Booking Lapangan Olahraga</p>
-                <p>Fondasi Fase F0 · Aksesibilitas &amp; Performa Terverifikasi</p>
+            <div class="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+                <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+                    <div class="sm:col-span-2 lg:col-span-1">
+                        <Link
+                            href="/"
+                            class="inline-flex min-h-[44px] items-center gap-2.5 font-display text-2xl font-bold tracking-tight text-primary"
+                        >
+                            <span
+                                class="inline-flex h-8 w-8 items-center justify-center rounded-[var(--radius-control)] bg-primary text-sm font-bold text-accent"
+                                aria-hidden="true"
+                            >
+                                AK
+                            </span>
+                            <span>ArenaKita</span>
+                        </Link>
+                        <p class="mt-2.5 text-sm leading-relaxed text-ink-muted">
+                            Platform booking lapangan olahraga multi-venue dengan jadwal real-time, anti double booking, dan verifikasi pembayaran transparan.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h2 class="font-display text-lg font-bold text-ink">Jelajahi</h2>
+                        <ul class="mt-3 space-y-1 text-sm">
+                            <li>
+                                <Link href="/venues" class="inline-flex min-h-[44px] items-center text-ink-muted hover:text-ink">
+                                    Cari Lapangan
+                                </Link>
+                            </li>
+                            <li>
+                                <a href="/#kategori" class="inline-flex min-h-[44px] items-center text-ink-muted hover:text-ink">
+                                    Kategori Olahraga
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/#venue-unggulan" class="inline-flex min-h-[44px] items-center text-ink-muted hover:text-ink">
+                                    Venue Unggulan
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h2 class="font-display text-lg font-bold text-ink">Mitra Venue</h2>
+                        <ul class="mt-3 space-y-1 text-sm">
+                            <li>
+                                <a href="/#pemilik-venue" class="inline-flex min-h-[44px] items-center text-ink-muted hover:text-ink">
+                                    Paket Berlangganan
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/#cara-kerja" class="inline-flex min-h-[44px] items-center text-ink-muted hover:text-ink">
+                                    Cara Kerja Sistem
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/#faq" class="inline-flex min-h-[44px] items-center text-ink-muted hover:text-ink">
+                                    Pertanyaan Umum
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h2 class="font-display text-lg font-bold text-ink">Akses &amp; Indeks</h2>
+                        <ul class="mt-3 space-y-1 text-sm">
+                            <li>
+                                <Link href="/staff/login" class="inline-flex min-h-[44px] items-center text-ink-muted hover:text-ink">
+                                    Login Staf &amp; Pemilik
+                                </Link>
+                            </li>
+                            <li>
+                                <a href="/sitemap.xml" class="inline-flex min-h-[44px] items-center text-ink-muted hover:text-ink">
+                                    Sitemap XML
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/llms.txt" class="inline-flex min-h-[44px] items-center text-ink-muted hover:text-ink">
+                                    Panduan Agentic (llms.txt)
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex flex-col gap-2 border-t border-border pt-6 text-xs text-ink-muted sm:flex-row sm:items-center sm:justify-between">
+                    <p>&copy; {{ new Date().getFullYear() }} ArenaKita. Seluruh hak cipta dilindungi.</p>
+                    <p>Waktu transaksi mengikuti zona waktu masing-masing venue.</p>
+                </div>
             </div>
         </footer>
 

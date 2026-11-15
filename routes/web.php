@@ -4,12 +4,16 @@ use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\Auth\StaffAuthController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Dashboard\VenueSelectionController;
+use App\Http\Controllers\Public\LandingController;
+use App\Http\Controllers\Public\PublicVenueController;
+use App\Http\Controllers\Public\SeoController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('Home');
-})->name('home');
+Route::get('/', [LandingController::class, 'index'])->name('home');
+Route::get('/venues', [PublicVenueController::class, 'index'])->name('venues.index');
+Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('seo.sitemap');
+Route::get('/robots.txt', [SeoController::class, 'robots'])->name('seo.robots');
+Route::get('/llms.txt', [SeoController::class, 'llms'])->name('seo.llms');
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])->name('auth.google.redirect');

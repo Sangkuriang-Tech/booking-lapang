@@ -21,7 +21,7 @@ Legenda Status: `[ ]` Belum dikerjakan · `[~]` Sebagian (fase berikutnya) · `[
 | | Token QR menggunakan CSPRNG minimal 32 byte & disimpan sebagai hash SHA-256 | F4 | `[ ]` | |
 | | Penyamaran PII (`a***@gmail.com`) pada log & pesan error | F1–F6 | `[~]` | `app/Actions/Auth/AuthenticateStaff.php` (`maskEmail`), `tests/Feature/AuthenticationTest.php` |
 | **A05: Injection** | Query memakai Eloquent/parameter binding; allowlist untuk kolom sorting dinamis | F1–F5 | `[~]` | Seluruh query F1 memakai Eloquent/parameter binding |
-| | Dilarang `v-html` & `{!! !!}` untuk input pengguna | F2–F5 | `[ ]` | |
+| | Dilarang `v-html` & `{!! !!}` untuk input pengguna | F2–F5 | `[~]` | Halaman publik F2 (`Home.vue`, `Venues/Index.vue`, `PublicLayout.vue`, komponen `Landing/*`) bebas `v-html`; `SeoController@sitemap` memakai `e()` |
 | **A06: Insecure Design** | Kalkulasi harga, DP, kuota paket, dan transisi status 100% di server (`app/Actions`) | F3, F4, F5 | `[~]` | Penegakan kuota paket & validasi di `app/Actions/*` |
 | | Anti *slot hoarding*: batas hold per akun & per IP/subnet untuk user baru | F3 | `[ ]` | |
 | | Rate limiting pada pembuatan booking, upload bukti, dan login | F1, F3 | `[~]` | Throttle 5/menit pada `StaffAuthController`, `tests/Feature/AuthenticationTest.php` |
@@ -51,7 +51,7 @@ Legenda Status: `[ ]` Belum dikerjakan · `[~]` Sebagian (fase berikutnya) · `[
 
 - **F0:** Selesai (2026-11-15). Header keamanan OWASP A02, konfigurasi cookie sesi (`HttpOnly`, `SameSite=Lax`), `composer audit` (0 advisories), `npm audit --omit=dev` (0 vulnerabilities), Pest (5/5 lulus), Pint (`passed`), dan Lighthouse CI 13.6.0 (Mobile: Perf 0.97, A11y 1.0, BP 1.0, SEO 1.0, Agentic Browsing 1.0; Desktop: 1.0 semua kategori) terverifikasi.
 - **F1:** Selesai (2026-11-15). Migrasi PostgreSQL (18 tabel + `notifications`, `btree_gist`, `bookings_no_overlap`, trigger `prevent_booking_block_overlap()` & `forbid_update_delete()`), isolasi `venue_id` via `VenueScope` & `VenueContext`, Policy seluruh model, Google Sign-In & login staf dengan throttle, enkripsi kolom sensitif, serta penegakan kuota paket & masa tenggang H+7 terverifikasi oleh Pest dan Pint.
-- **F2:** *(Belum dijalankan)*
+- **F2:** Selesai (2026-11-15). Landing page publik (`Home.vue` + 5 komponen `Landing/*` dengan `defineAsyncComponent`), `PublicLayout.vue`, `/venues`, `/sitemap.xml`, `/robots.txt`, `/llms.txt`, JSON-LD (`WebSite`, `Organization`, `BreadcrumbList`), tanpa Google Sign-In script di landing, Pest (26/26 lulus, 169 assertions), Pint (`passed`), dan Lighthouse CI 13.6.0 (Mobile: Perf 0.96, A11y 1.0, BP 1.0, SEO 1.0, CLS 0; Desktop: Perf 1.0, A11y 1.0, BP 1.0, SEO 1.0, CLS 0) terverifikasi.
 - **F3:** *(Belum dijalankan)*
 - **F4:** *(Belum dijalankan)*
 - **F5:** *(Belum dijalankan)*

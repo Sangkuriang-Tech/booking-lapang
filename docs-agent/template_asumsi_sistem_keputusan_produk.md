@@ -58,7 +58,11 @@ Dokumen ini mencatat seluruh keputusan bisnis, asumsi teknis, dan perilaku *edge
 - **Seeder Lokal/Staging:** `LocalDevelopmentSeeder` hanya berjalan di lingkungan `local`, `staging`, dan `testing` (ketika dipanggil eksplisit oleh tes), mencakup `owner_grace@example.test` (H+3) dan `owner_expired@example.test` (>H+7) selain akun contoh utama.
 
 ### Fase F2 — Landing Page
-- *(Agent: catat asumsi terkait konten statis, FAQ, atau metadata SEO di sini)*
+- **Query & Cache Publik:** `App\Actions\Landing\GetPublicVenues` menyaring hanya venue dengan `is_published = true` dan langganan pemilik berstatus aktif (`Subscription::allowsPublicListing()`) pada hari berjalan di zona waktu masing-masing venue, dengan `withoutGlobalScope(VenueScope::class)` pada relasi `courts` dan `photos` agar staf yang sedang login tetap melihat katalog publik secara utuh. Data landing page di-cache 5 menit (`landing:page-data:v1`), sedangkan `/sitemap.xml` dan `/llms.txt` di-cache 10 menit.
+- **Placeholder Rute Pencarian `/venues`:** Form pencarian di Hero mengarah ke `/venues?sport={slug}&city={city_slug}` yang dilayani oleh `PublicVenueController@index` (`Pages/Venues/Index.vue`) agar tidak menghasilkan tautan 404 saat diaudit sebelum Fase F3 dikerjakan. Kartu venue unggulan juga diarahkan ke `/venues?city={city_slug}` pada fase ini; URL `/venue/{slug}` dipersiapkan di `sitemap.xml` dan `llms.txt` untuk Fase F3.
+- **Aset Visual & Fallback:** Foto sampul kartu venue memakai dimensi eksplisit (`width`, `height`, `loading="lazy"`) di dalam kontainer `aspect-[16/10]`, dengan fallback ilustrasi SVG lapangan inline (nol gradient) jika venue belum memiliki foto upload.
+- **Efek, Aksesibilitas & SSR:** Elemen `<h1>` (LCP) dirender langsung tanpa animasi penyembunyi; komponen di bawah fold di-split menggunakan `defineAsyncComponent`; efek stagger, scroll-reveal (`IntersectionObserver`), dan count-up dinonaktifkan otomatis saat `prefers-reduced-motion: reduce`. Google Sign-In script tidak dimuat di halaman landing.
+- **SEO & Agentic Browsing:** `<Head>` menyertakan canonical, Open Graph, Twitter Card, dan JSON-LD (`WebSite` dengan `SearchAction`, `Organization`, `BreadcrumbList`). `/robots.txt` memblokir `/dashboard`, `/login`, `/account`, dan `/staff/login`.
 
 ### Fase F3 — Pencarian dan Booking
 - *(Agent: catat asumsi terkait batas maksimal hold per IP/subnet, kalkulasi multi-jam, atau UX upload di sini)*
