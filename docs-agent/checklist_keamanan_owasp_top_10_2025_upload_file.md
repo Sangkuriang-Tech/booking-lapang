@@ -49,7 +49,7 @@ Legenda Status: `[ ]` Belum dikerjakan · `[~]` Sebagian (fase berikutnya) · `[
 
 ## 3. Riwayat Audit Per Fase (Diisi oleh Agent)
 
-- **F0:** Selesai (2026-11-15). Header keamanan OWASP A02, konfigurasi cookie sesi (`HttpOnly`, `SameSite=Lax`), `composer audit` (0 advisories), `npm audit --omit=dev` (0 vulnerabilities), Pest (5/5 lulus), Pint (`passed`), dan Lighthouse CI mobile & desktop (1.00 di semua kategori) terverifikasi.
+- **F0:** Selesai (2026-11-15). Header keamanan OWASP A02, konfigurasi cookie sesi (`HttpOnly`, `SameSite=Lax`), `composer audit` (0 advisories), `npm audit --omit=dev` (0 vulnerabilities), Pest (5/5 lulus), Pint (`passed`), dan Lighthouse CI 13.6.0 (Mobile: Perf 0.97, A11y 1.0, BP 1.0, SEO 1.0, Agentic Browsing 1.0; Desktop: 1.0 semua kategori) terverifikasi.
 - **F1:** *(Belum dijalankan)*
 - **F2:** *(Belum dijalankan)*
 - **F3:** *(Belum dijalankan)*
