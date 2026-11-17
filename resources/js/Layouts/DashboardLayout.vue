@@ -144,9 +144,9 @@ function logout() {
                         class="inline-flex h-7 w-7 items-center justify-center rounded-[var(--radius-control)] bg-primary text-xs font-bold text-accent"
                         aria-hidden="true"
                     >
-                        AK
+                        BL
                     </span>
-                    <span>ArenaKita</span>
+                    <span>Booking Lapang</span>
                 </Link>
 
                 <button

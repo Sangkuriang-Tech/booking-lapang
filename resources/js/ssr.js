@@ -4,7 +4,7 @@ import { createInertiaApp } from '@inertiajs/vue3';
 import createServer from '@inertiajs/vue3/server';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 
-const appName = import.meta.env.VITE_APP_NAME || 'ArenaKita';
+const appName = import.meta.env.VITE_APP_NAME || 'Booking Lapang';
 
 createServer((page) =>
     createInertiaApp({

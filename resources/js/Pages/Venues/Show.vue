@@ -61,7 +61,15 @@ const selectedCourt = computed(
 );
 
 const coverPhoto = computed(
-    () => props.venue.photos.find((p) => p.is_cover) || props.venue.photos[0] || null,
+    () =>
+        props.venue.photos.find((p) => p.is_cover) ||
+        props.venue.photos.find((p) => !p.court_ulid) ||
+        props.venue.photos[0] ||
+        null,
+);
+
+const selectedCourtPhotos = computed(() =>
+    props.venue.photos.filter((p) => p.court_ulid === props.selected_court_ulid),
 );
 
 const formattedSelectedDate = computed(() =>
@@ -322,6 +330,28 @@ function submitBooking() {
                                 {{ court.name }}
                                 <span v-if="court.sport" class="ml-1 text-xs opacity-80">({{ court.sport }})</span>
                             </button>
+                        </div>
+
+                        <div v-if="selectedCourt && selectedCourtPhotos.length > 0" class="mt-5">
+                            <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-ink-muted">
+                                Foto {{ selectedCourt.name }}
+                            </p>
+                            <div class="grid gap-3 sm:grid-cols-2">
+                                <div
+                                    v-for="photo in selectedCourtPhotos"
+                                    :key="photo.url"
+                                    class="overflow-hidden rounded-[var(--radius-control)] border border-border bg-canvas"
+                                >
+                                    <img
+                                        :src="photo.url"
+                                        :alt="photo.alt_text || `Foto ${selectedCourt.name}`"
+                                        :width="photo.width"
+                                        :height="photo.height"
+                                        loading="lazy"
+                                        class="aspect-[16/10] w-full object-cover"
+                                    />
+                                </div>
+                            </div>
                         </div>
 
                         <div class="mt-6">

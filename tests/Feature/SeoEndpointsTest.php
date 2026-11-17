@@ -72,7 +72,7 @@ it('returns llms.txt with site summary and active published venues only', functi
 
     $body = $response->getContent();
     expect($body)
-        ->toContain('# ArenaKita')
+        ->toContain('# Booking Lapang')
         ->toContain('Cara Kerja Booking')
         ->toContain('Antic Futsal Center')
         ->not->toContain('Arena Contoh Dua')

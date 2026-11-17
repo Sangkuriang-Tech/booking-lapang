@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
+use Throwable;
 
 class OtsBookingController extends Controller
 {
@@ -35,20 +36,24 @@ class OtsBookingController extends Controller
         $selectedCourtUlid = $request->string('court')->toString();
         $selectedCourt = $courts->firstWhere('ulid', $selectedCourtUlid) ?? $courts->first();
 
-        $date = $request->string('date')->toString();
-        if (! preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
-            $date = now()->setTimezone($timezone)->toDateString();
+        $date = trim($request->string('date')->toString());
+        try {
+            $playDate = $date !== ''
+                ? CarbonImmutable::createFromFormat('Y-m-d', $date, $timezone)->startOfDay()
+                : CarbonImmutable::now($timezone)->startOfDay();
+        } catch (Throwable) {
+            $playDate = CarbonImmutable::now($timezone)->startOfDay();
         }
 
         $slots = $selectedCourt !== null
-            ? $getAvailableSlots->execute($venue, $selectedCourt, $date)
+            ? $getAvailableSlots->execute($venue, $selectedCourt, $playDate)
             : [];
 
         return Inertia::render('Dashboard/Ots/Create', [
             'allowsOts' => $venue->allowsOtsBooking(),
             'dpPercent' => $venue->dp_percent,
             'timezone' => $timezone,
-            'selectedDate' => $date,
+            'selectedDate' => $playDate->toDateString(),
             'selectedCourtUlid' => $selectedCourt?->ulid,
             'courts' => $courts->map(fn (Court $court): array => [
                 'ulid' => $court->ulid,

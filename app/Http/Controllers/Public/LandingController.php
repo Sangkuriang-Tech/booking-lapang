@@ -24,7 +24,7 @@ class LandingController extends Controller
             'seo' => [
                 'canonical' => $baseUrl.'/',
                 'siteUrl' => $baseUrl,
-                'siteName' => config('app.name', 'ArenaKita'),
+                'siteName' => config('app.name', 'Booking Lapang'),
             ],
         ]);
     }

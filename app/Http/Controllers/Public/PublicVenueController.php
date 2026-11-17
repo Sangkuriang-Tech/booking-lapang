@@ -147,6 +147,8 @@ class PublicVenueController extends Controller
             ? $getAvailableSlots->execute($venue, $selectedCourt, $playDate)
             : [];
 
+        $courtUlidById = $venue->courts->pluck('ulid', 'id');
+
         return Inertia::render('Venues/Show', [
             'venue' => [
                 'ulid' => $venue->ulid,
@@ -166,6 +168,7 @@ class PublicVenueController extends Controller
                     'width' => $photo->width,
                     'height' => $photo->height,
                     'is_cover' => $photo->is_cover,
+                    'court_ulid' => $photo->court_id !== null ? $courtUlidById->get($photo->court_id) : null,
                 ])->values()->all(),
                 'operating_hours' => $venue->operatingHours->map(fn ($hour): array => [
                     'weekday' => $hour->weekday,

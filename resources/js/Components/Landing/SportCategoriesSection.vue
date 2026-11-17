@@ -13,6 +13,28 @@ defineProps({
 
 const sectionRef = ref(null);
 const { isRevealed } = useScrollReveal(sectionRef);
+
+function sportIconKey(slug) {
+    const value = String(slug || '').toLowerCase();
+
+    if (value.includes('badminton') || value.includes('bulutangkis')) {
+        return 'badminton';
+    }
+    if (value.includes('basket')) {
+        return 'basket';
+    }
+    if (value.includes('padel') || value.includes('tenis') || value.includes('tennis')) {
+        return 'racket';
+    }
+    if (value.includes('futsal') || value.includes('soccer') || value.includes('sepak')) {
+        return 'football';
+    }
+    if (value.includes('voli') || value.includes('volley')) {
+        return 'volleyball';
+    }
+
+    return 'default';
+}
 </script>
 
 <template>
@@ -60,9 +82,28 @@ const { isRevealed } = useScrollReveal(sectionRef);
                         class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[var(--radius-control)] bg-canvas text-primary transition-colors group-hover:bg-accent group-hover:text-ink"
                         aria-hidden="true"
                     >
-                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg v-if="sportIconKey(sport.slug) === 'badminton'" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 18l-5-9 3-2 2 4 2-4 3 2-5 9z" />
+                            <circle cx="12" cy="19.5" r="2" />
+                            <path d="M8.5 7L7 4M12 6.5V3.5M15.5 7L17 4" />
+                        </svg>
+                        <svg v-else-if="sportIconKey(sport.slug) === 'basket'" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="9" />
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3a14.5 14.5 0 000 18M3 12h18" />
+                            <path d="M12 3v18M3 12h18M5.6 5.6c3.2 2.4 3.2 10.4 0 12.8M18.4 5.6c-3.2 2.4-3.2 10.4 0 12.8" />
+                        </svg>
+                        <svg v-else-if="sportIconKey(sport.slug) === 'racket'" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <ellipse cx="14" cy="9" rx="5.5" ry="6.5" transform="rotate(35 14 9)" />
+                            <path d="M10 14l-6 6" />
+                            <circle cx="6.5" cy="7.5" r="1.5" />
+                        </svg>
+                        <svg v-else-if="sportIconKey(sport.slug) === 'football'" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="9" />
+                            <polygon points="12,7.5 15.8,10.3 14.3,14.8 9.7,14.8 8.2,10.3" />
+                            <path d="M12 3v4.5M20.5 9.5l-4.7.8M17.3 19.2l-3-4.4M6.7 19.2l3-4.4M3.5 9.5l4.7.8" />
+                        </svg>
+                        <svg v-else class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="9" />
+                            <path d="M12 3a14.5 14.5 0 000 18M3 12h18" />
                         </svg>
                     </span>
                     <div>

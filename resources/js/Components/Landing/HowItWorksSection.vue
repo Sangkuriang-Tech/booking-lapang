@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue';
+import FuturisticSportBackdrop from '@/Components/UI/FuturisticSportBackdrop.vue';
 import { useScrollReveal } from '@/Composables/useScrollReveal';
 
 const sectionRef = ref(null);
@@ -32,10 +33,11 @@ const steps = [
         id="cara-kerja"
         ref="sectionRef"
         aria-labelledby="heading-cara-kerja"
-        class="reveal-section border-y border-border bg-surface"
+        class="reveal-section relative overflow-hidden border-y border-border bg-surface"
         :class="isRevealed ? 'reveal-section-visible' : 'reveal-section-hidden'"
     >
-        <div class="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
+        <FuturisticSportBackdrop variant="section" />
+        <div class="relative z-10 mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
             <div class="max-w-2xl">
                 <p class="text-xs font-bold uppercase tracking-wider text-primary">
                     Alur Reservasi

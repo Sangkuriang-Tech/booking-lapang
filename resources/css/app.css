@@ -118,6 +118,42 @@
     transform: translateY(0);
 }
 
+@keyframes futuristic-line-flow {
+    0% {
+        stroke-dashoffset: 360;
+    }
+    100% {
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes futuristic-pulse {
+    0%, 100% {
+        opacity: 0.25;
+        transform: scale(0.95);
+    }
+    50% {
+        opacity: 0.8;
+        transform: scale(1.15);
+    }
+}
+
+.futuristic-line-flow {
+    stroke-dasharray: 140 220;
+    animation: futuristic-line-flow 12s linear infinite;
+}
+
+.futuristic-line-flow-reverse {
+    stroke-dasharray: 90 190;
+    animation: futuristic-line-flow 16s linear infinite reverse;
+}
+
+.futuristic-pulse-dot {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: futuristic-pulse 3.4s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
     html {
         scroll-behavior: auto;
@@ -126,7 +162,10 @@
     .skeleton-pulse,
     .hero-stagger-1,
     .hero-stagger-2,
-    .hero-stagger-3 {
+    .hero-stagger-3,
+    .futuristic-line-flow,
+    .futuristic-line-flow-reverse,
+    .futuristic-pulse-dot {
         animation: none;
     }
 

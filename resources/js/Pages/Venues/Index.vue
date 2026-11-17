@@ -62,7 +62,7 @@ function resetFilters() {
         <title>Cari &amp; Booking Lapangan Olahraga</title>
         <meta
             name="description"
-            content="Cari dan pesan lapangan futsal, mini soccer, badminton, padel, dan basket secara online di ArenaKita."
+            content="Cari dan pesan lapangan futsal, mini soccer, badminton, padel, dan basket secara online di Booking Lapang."
         />
     </Head>
 

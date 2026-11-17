@@ -95,7 +95,7 @@ class SeoController extends Controller
     public function llms(Request $request, GetPublicVenues $getPublicVenues): Response
     {
         $baseUrl = rtrim($request->getSchemeAndHttpHost(), '/');
-        $appName = config('app.name', 'ArenaKita');
+        $appName = config('app.name', 'Booking Lapang');
 
         $content = Cache::remember(self::LLMS_CACHE_KEY, now()->addMinutes(10), function () use ($appName, $baseUrl, $getPublicVenues): string {
             $venues = $getPublicVenues->execute(withDetails: false);

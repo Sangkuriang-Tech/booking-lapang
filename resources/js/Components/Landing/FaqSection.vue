@@ -20,7 +20,7 @@ const faqs = [
     },
     {
         question: 'Bagaimana jika pemilik venue ingin mendaftarkan arena olahraga?',
-        answer: 'Hubungi tim ArenaKita melalui tombol Hubungi Tim ArenaKita. Setelah akun pemilik dan paket berlangganan aktif, Anda dapat mengelola profil venue, lapangan, harga, rekening, dan akun karyawan.',
+        answer: 'Hubungi tim Booking Lapang melalui tombol Hubungi Tim Booking Lapang. Setelah akun pemilik dan paket berlangganan aktif, Anda dapat mengelola profil venue, lapangan, harga, rekening, dan akun karyawan.',
     },
 ];
 </script>

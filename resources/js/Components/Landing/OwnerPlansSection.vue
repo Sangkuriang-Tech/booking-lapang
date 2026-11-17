@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue';
+import FuturisticSportBackdrop from '@/Components/UI/FuturisticSportBackdrop.vue';
 import { useScrollReveal } from '@/Composables/useScrollReveal';
 import { formatNumber, formatRupiah } from '@/Utils/format';
 
@@ -27,10 +28,11 @@ function formatQuota(value, suffix) {
         id="pemilik-venue"
         ref="sectionRef"
         aria-labelledby="heading-pemilik-venue"
-        class="reveal-section border-y border-border bg-surface"
+        class="reveal-section relative overflow-hidden border-y border-border bg-surface"
         :class="isRevealed ? 'reveal-section-visible' : 'reveal-section-hidden'"
     >
-        <div class="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
+        <FuturisticSportBackdrop variant="section" />
+        <div class="relative z-10 mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
             <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                 <div class="max-w-2xl">
                     <p class="text-xs font-bold uppercase tracking-wider text-primary">
@@ -45,10 +47,10 @@ function formatQuota(value, suffix) {
                 </div>
 
                 <a
-                    href="mailto:halo@arenakita.id?subject=Konsultasi%20Kemitraan%20Venue%20ArenaKita"
+                    href="mailto:halo@arenakita.id?subject=Konsultasi%20Kemitraan%20Venue%20Booking%20Lapang"
                     class="inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-[var(--radius-control)] bg-primary px-5 py-2.5 text-sm font-bold text-white hover:bg-primary-hover"
                 >
-                    Hubungi Tim ArenaKita
+                    Hubungi Tim Booking Lapang
                 </a>
             </div>
 
@@ -56,8 +58,8 @@ function formatQuota(value, suffix) {
                 <article
                     v-for="plan in plans"
                     :key="plan.code"
-                    class="flex flex-col rounded-[var(--radius-card)] border p-6"
-                    :class="plan.code === 'pro' ? 'border-primary bg-canvas' : 'border-border bg-surface'"
+                    class="flex flex-col rounded-[var(--radius-card)] border p-6 transition-shadow"
+                    :class="plan.code === 'pro' ? 'border-primary bg-canvas shadow-md ring-2 ring-primary' : 'border-border bg-surface shadow-sm'"
                 >
                     <div class="flex items-center justify-between gap-2">
                         <h3 class="font-display text-2xl font-bold text-ink">
@@ -65,9 +67,9 @@ function formatQuota(value, suffix) {
                         </h3>
                         <span
                             v-if="plan.code === 'pro'"
-                            class="rounded-[var(--radius-control)] bg-accent px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-ink"
+                            class="rounded-full bg-accent px-3 py-1 text-xs font-bold uppercase tracking-wide text-ink"
                         >
-                            Populer
+                            Paling Populer
                         </span>
                     </div>
 

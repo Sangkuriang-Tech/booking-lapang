@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title inertia>{{ config('app.name', 'ArenaKita') }}</title>
+        <title inertia>{{ config('app.name', 'Booking Lapang') }}</title>
         <link
             rel="preload"
             href="/fonts/barlow-condensed-700-latin.woff2"

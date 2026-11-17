@@ -1,6 +1,7 @@
 <script setup>
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { Link } from '@inertiajs/vue3';
+import FuturisticSportBackdrop from '@/Components/UI/FuturisticSportBackdrop.vue';
 import Toast from '@/Components/UI/Toast.vue';
 
 const props = defineProps({
@@ -59,9 +60,9 @@ onBeforeUnmount(() => {
                         class="inline-flex h-8 w-8 items-center justify-center rounded-[var(--radius-control)] bg-primary text-sm font-bold text-accent"
                         aria-hidden="true"
                     >
-                        AK
+                        BL
                     </span>
-                    <span>ArenaKita</span>
+                    <span>Booking Lapang</span>
                 </Link>
 
                 <nav aria-label="Navigasi utama" class="hidden items-center gap-1 md:flex">
@@ -142,8 +143,9 @@ onBeforeUnmount(() => {
             <slot />
         </main>
 
-        <footer class="border-t border-border bg-surface">
-            <div class="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+        <footer class="relative overflow-hidden border-t border-border bg-surface">
+            <FuturisticSportBackdrop variant="footer" />
+            <div class="relative z-10 mx-auto max-w-6xl px-4 py-10 sm:px-6">
                 <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
                     <div class="sm:col-span-2 lg:col-span-1">
                         <Link
@@ -154,9 +156,9 @@ onBeforeUnmount(() => {
                                 class="inline-flex h-8 w-8 items-center justify-center rounded-[var(--radius-control)] bg-primary text-sm font-bold text-accent"
                                 aria-hidden="true"
                             >
-                                AK
+                                BL
                             </span>
-                            <span>ArenaKita</span>
+                            <span>Booking Lapang</span>
                         </Link>
                         <p class="mt-2.5 text-sm leading-relaxed text-ink-muted">
                             Platform booking lapangan olahraga multi-venue dengan jadwal real-time, anti double booking, dan verifikasi pembayaran transparan.
@@ -228,7 +230,7 @@ onBeforeUnmount(() => {
                 </div>
 
                 <div class="mt-8 flex flex-col gap-2 border-t border-border pt-6 text-xs text-ink-muted sm:flex-row sm:items-center sm:justify-between">
-                    <p>&copy; {{ new Date().getFullYear() }} ArenaKita. Seluruh hak cipta dilindungi.</p>
+                    <p>&copy; {{ new Date().getFullYear() }} Booking Lapang. Seluruh hak cipta dilindungi.</p>
                     <p>Waktu transaksi mengikuti zona waktu masing-masing venue.</p>
                 </div>
             </div>
